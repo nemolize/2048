@@ -9,9 +9,13 @@ export const GameBoard = ({ grid }: GameBoardProps) => {
   return (
     <div
       className={clsx(
-        "relative bg-gray-700 rounded-lg p-4",
-        "grid grid-cols-4 gap-4",
+        "relative bg-gray-700 rounded-lg",
+        "grid grid-cols-4",
         "touch-none select-none",
+        "w-[90vw] max-w-[500px] aspect-square",
+        "gap-[2vw] p-[2vw]",
+        "sm:gap-3 sm:p-3",
+        "md:gap-4 md:p-4",
       )}
       style={{ touchAction: "none" }}
     >

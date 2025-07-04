@@ -27,7 +27,8 @@ export const Tile = ({ value }: TileProps) => {
     <div
       className={clsx(
         "aspect-square flex items-center justify-center",
-        "rounded-md font-bold text-2xl transition-all duration-150",
+        "rounded-md font-bold transition-all duration-150",
+        "text-[5vw] sm:text-2xl md:text-3xl",
         colorClass,
         {
           "scale-100": value !== 0,
