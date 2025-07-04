@@ -68,8 +68,12 @@ const App = () => {
     >
       <div className="flex flex-col items-center gap-4 sm:gap-6 md:gap-8 px-4">
         <div className="text-center">
-          <h1 className="text-[10vw] sm:text-5xl md:text-6xl font-bold mb-2 sm:mb-4">2048</h1>
-          <div className="text-[5vw] sm:text-xl md:text-2xl mb-2 sm:mb-4">Score: {score}</div>
+          <h1 className="text-[10vw] sm:text-5xl md:text-6xl font-bold mb-2 sm:mb-4">
+            2048
+          </h1>
+          <div className="text-[5vw] sm:text-xl md:text-2xl mb-2 sm:mb-4">
+            Score: {score}
+          </div>
         </div>
 
         <div ref={gameBoardRef}>
