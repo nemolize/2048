@@ -20,13 +20,18 @@ export const GameBoard = ({ grid }: GameBoardProps) => {
       style={{ touchAction: "none" }}
     >
       {grid.map((row, rowIndex) =>
-        row.map((value, colIndex) => (
-          <Tile
-            key={`${rowIndex}-${colIndex}`}
-            value={value}
-            position={{ row: rowIndex, col: colIndex }}
-          />
-        )),
+        row.map((value, colIndex) => {
+          // Create a stable key based on grid position
+          // For a 4x4 grid, this creates keys from "pos-0" to "pos-15"
+          const positionKey = `pos-${rowIndex * 4 + colIndex}`;
+          return (
+            <Tile
+              key={positionKey}
+              value={value}
+              position={{ row: rowIndex, col: colIndex }}
+            />
+          );
+        }),
       )}
     </div>
   );
