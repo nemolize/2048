@@ -1,15 +1,18 @@
-# Web App Template
+# 2048 Game
 
-A modern web application template built with React, TypeScript, and Vite.
+An implementation of the classic 2048 puzzle game built with React, TypeScript, and Vite.
 
 ## Features
 
-- **React** with TypeScript
-- **Vite** for fast development and building
-- **Biome** for linting and formatting
-- **Vitest** for unit testing with Testing Library
-- **Playwright** for end-to-end testing
-- **Renovate** for automated dependency updates
+- **Classic 2048 gameplay**
+- **Touch/swipe controls** for mobile devices using interact.js
+- **Keyboard controls** for desktop (arrow keys)
+- **Responsive design** that works on all screen sizes
+- **Game state management** with score tracking and win/lose detection
+- **Tech stack**: React, TypeScript, Vite, Tailwind CSS
+- **Comprehensive testing** with Vitest and Playwright
+- **Code quality tools**: Biome for linting and formatting
+- **Automated dependency updates** with Renovate
 
 ## Getting Started
 
@@ -31,6 +34,18 @@ Start the development server:
 ```bash
 pnpm dev
 ```
+
+The game will be available at `http://localhost:5173`
+
+#### How to Play
+
+- **Desktop**: Use arrow keys to move tiles
+- **Mobile**: Swipe in any direction to move tiles
+- **Goal**: Combine tiles with the same number to reach 2048
+- **Controls**: 
+  - Arrow keys or swipe gestures to move tiles
+  - "New Game" button to restart
+  - "Reset Game" button to start over anytime
 
 ### Building
 
