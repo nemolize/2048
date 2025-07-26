@@ -4,9 +4,11 @@ import tseslint from "typescript-eslint";
 import { includeIgnoreFile } from "@eslint/compat";
 import { fileURLToPath } from "node:url";
 import globals from "globals";
+import js from "@eslint/js";
 
 export default tseslint.config(
   includeIgnoreFile(fileURLToPath(new URL(".gitignore", import.meta.url))),
+  js.configs.recommended,
   tseslint.configs.recommended,
   {
     languageOptions: { globals: { ...globals.browser } },
