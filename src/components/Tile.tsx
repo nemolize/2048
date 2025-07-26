@@ -21,12 +21,12 @@ const tileColors: Record<number, string> = {
 };
 
 export const Tile = ({ value }: TileProps) => {
-  const colorClass = tileColors[value] || "bg-gray-900 text-white";
+  const colorClass = tileColors[value] ?? "bg-gray-900 text-white";
 
   return (
     <div
       className={clsx(
-        "aspect-square flex items-center justify-center",
+        "flex aspect-square items-center justify-center",
         "rounded-md font-bold transition-all duration-150",
         "text-[5vw] sm:text-2xl md:text-3xl",
         colorClass,

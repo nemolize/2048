@@ -61,17 +61,17 @@ const App = () => {
   return (
     <div
       className={clsx(
-        "flex min-h-screen h-screen",
+        "flex h-screen min-h-screen",
         "items-center justify-center",
-        "bg-gray-900 text-white overflow-hidden",
+        "overflow-hidden bg-gray-900 text-white",
       )}
     >
-      <div className="flex flex-col items-center gap-4 sm:gap-6 md:gap-8 px-4">
+      <div className="flex flex-col items-center gap-4 px-4 sm:gap-6 md:gap-8">
         <div className="text-center">
-          <h1 className="text-[10vw] sm:text-5xl md:text-6xl font-bold mb-2 sm:mb-4">
+          <h1 className="mb-2 text-[10vw] font-bold sm:mb-4 sm:text-5xl md:text-6xl">
             2048
           </h1>
-          <div className="text-[5vw] sm:text-xl md:text-2xl mb-2 sm:mb-4">
+          <div className="mb-2 text-[5vw] sm:mb-4 sm:text-xl md:text-2xl">
             Score: {score}
           </div>
         </div>
@@ -82,7 +82,7 @@ const App = () => {
 
         {(gameOver || won) && (
           <div className="text-center">
-            <div className="text-[6vw] sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-4">
+            <div className="mb-2 text-[6vw] font-bold sm:mb-4 sm:text-2xl md:text-3xl">
               {won ? "You Win! 🎉" : "Game Over!"}
             </div>
             <button
@@ -90,7 +90,7 @@ const App = () => {
               className={clsx(
                 "rounded-lg bg-blue-500 px-6 py-3",
                 "font-bold text-white",
-                "hover:bg-blue-700 transition-colors",
+                "transition-colors hover:bg-blue-700",
               )}
               type="button"
             >
@@ -105,7 +105,7 @@ const App = () => {
             onClick={resetGame}
             className={clsx(
               "rounded bg-gray-700 px-4 py-2 text-sm",
-              "hover:bg-gray-600 transition-colors",
+              "transition-colors hover:bg-gray-600",
             )}
             type="button"
           >

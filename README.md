@@ -11,7 +11,7 @@ An implementation of the classic 2048 puzzle game built with React, TypeScript, 
 - **Game state management** with score tracking and win/lose detection
 - **Tech stack**: React, TypeScript, Vite, Tailwind CSS
 - **Comprehensive testing** with Vitest and Playwright
-- **Code quality tools**: Biome for linting and formatting
+- **Code quality tools**: ESLint and Prettier for linting and formatting
 - **Automated dependency updates** with Renovate
 
 ## Getting Started
@@ -42,7 +42,7 @@ The game will be available at `http://localhost:5173`
 - **Desktop**: Use arrow keys to move tiles
 - **Mobile**: Swipe in any direction to move tiles
 - **Goal**: Combine tiles with the same number to reach 2048
-- **Controls**: 
+- **Controls**:
   - Arrow keys or swipe gestures to move tiles
   - "New Game" button to restart
   - "Reset Game" button to start over anytime
@@ -86,13 +86,7 @@ pnpm lint
 Fix code style issues:
 
 ```bash
-pnpm lint:fix
-```
-
-Run type checking:
-
-```bash
-pnpm typecheck
+pnpm fix
 ```
 
 ## License
