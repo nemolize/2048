@@ -1,10 +1,12 @@
-import reactHooks from "eslint-plugin-react-hooks";
-import unusedImports from "eslint-plugin-unused-imports";
-import tseslint from "typescript-eslint";
-import { includeIgnoreFile } from "@eslint/compat";
 import { fileURLToPath } from "node:url";
-import globals from "globals";
+
+import { includeIgnoreFile } from "@eslint/compat";
 import js from "@eslint/js";
+import reactHooks from "eslint-plugin-react-hooks";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
+import unusedImports from "eslint-plugin-unused-imports";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   includeIgnoreFile(fileURLToPath(new URL(".gitignore", import.meta.url))),
@@ -14,11 +16,14 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.browser } },
     plugins: {
       "react-hooks": reactHooks,
+      "simple-import-sort": simpleImportSort,
       "unused-imports": unusedImports,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
       "@typescript-eslint/no-unused-vars": "off",
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "error",
