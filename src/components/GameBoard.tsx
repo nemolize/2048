@@ -1,4 +1,5 @@
 import clsx from "clsx";
+
 import { Tile } from "./Tile";
 
 interface GameBoardProps {

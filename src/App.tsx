@@ -1,10 +1,12 @@
-import interact from "@interactjs/interact";
 import "@interactjs/auto-start";
 import "@interactjs/actions/drag";
 import "@interactjs/actions/gesture";
+
+import interact from "@interactjs/interact";
 import type { InteractEvent } from "@interactjs/types";
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
+
 import { GameBoard } from "./components/GameBoard";
 import { useGame2048 } from "./hooks/useGame2048";
 

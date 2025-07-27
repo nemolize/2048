@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { useGame2048 } from "./useGame2048";
 
 describe("useGame2048", () => {
