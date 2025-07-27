@@ -10,14 +10,14 @@ pre-commit:
 post-checkout:
   jobs:
     - run: pnpm install
-      files: pnpm-lock.yaml
+      only: pnpm-lock.yaml
 
 post-merge:
   jobs:
     - run: pnpm install
-      files: pnpm-lock.yaml
+      only: pnpm-lock.yaml
 
 post-rebase:
   jobs:
     - run: pnpm install
-      files: pnpm-lock.yaml
+      only: pnpm-lock.yaml
