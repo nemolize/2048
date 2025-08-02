@@ -11,7 +11,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   includeIgnoreFile(fileURLToPath(new URL(".gitignore", import.meta.url))),
   js.configs.recommended,
-  tseslint.configs.recommended,
+  tseslint.configs.strict,
   {
     languageOptions: { globals: { ...globals.browser } },
     plugins: {
