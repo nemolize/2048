@@ -1,8 +1,12 @@
 import clsx from "clsx";
+import { motion } from "motion/react";
+import type { CSSProperties } from "react";
+
+import type { TileState } from "../hooks/useGame2048";
 
 interface TileProps {
-  value: number;
-  position: { row: number; col: number };
+  tile: TileState;
+  style?: CSSProperties;
 }
 
 const tileColors: Record<number, string> = {
@@ -20,23 +24,28 @@ const tileColors: Record<number, string> = {
   2048: "bg-yellow-800 text-white",
 };
 
-export const Tile = ({ value }: TileProps) => {
+export const Tile = ({ tile, style }: TileProps) => {
+  const { value, isMerged, isNew, id } = tile;
   const colorClass = tileColors[value] ?? "bg-gray-900 text-white";
 
   return (
-    <div
+    <motion.div
+      layout
+      layoutId={id}
       className={clsx(
-        "flex aspect-square items-center justify-center",
-        "rounded-md font-bold transition-all duration-150",
+        "flex h-full w-full items-center justify-center",
+        "rounded-md font-bold",
         "text-[5vw] sm:text-2xl md:text-3xl",
         colorClass,
-        {
-          "scale-100": value !== 0,
-          "scale-95 opacity-0": value === 0,
-        },
       )}
+      style={style}
+      initial={{ scale: isNew ? 0.6 : 1, opacity: isNew ? 0 : 1 }}
+      animate={
+        isMerged ? { scale: [1, 1.1, 1], opacity: 1 } : { scale: 1, opacity: 1 }
+      }
+      transition={{ type: "spring", stiffness: 450, damping: 30, mass: 0.6 }}
     >
-      {value !== 0 && value}
-    </div>
+      {value}
+    </motion.div>
   );
 };

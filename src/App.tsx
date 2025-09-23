@@ -7,7 +7,8 @@ import { GameBoard } from "./components/GameBoard";
 import { useGame2048 } from "./hooks/useGame2048";
 
 const App = () => {
-  const { grid, score, gameOver, won, makeMove, resetGame } = useGame2048();
+  const { grid, tiles, score, gameOver, won, makeMove, resetGame } =
+    useGame2048();
 
   const handleSwipe = useCallback(
     (_event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
@@ -53,7 +54,7 @@ const App = () => {
           onPanEnd={handleSwipe}
           style={{ touchAction: "none" }}
         >
-          <GameBoard grid={grid} />
+          <GameBoard grid={grid} tiles={tiles} />
         </motion.div>
 
         {(gameOver || won) && (
