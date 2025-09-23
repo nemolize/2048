@@ -39,7 +39,8 @@ export const Tile = ({ tile, style }: TileProps) => {
         colorClass,
       )}
       style={style}
-      initial={{ scale: isNew ? 0.6 : 1, opacity: isNew ? 0 : 1 }}
+      role="gridcell"
+      initial={{ opacity: isNew ? 0 : 1, scale: 1 }}
       animate={
         isMerged ? { scale: [1, 1.1, 1], opacity: 1 } : { scale: 1, opacity: 1 }
       }

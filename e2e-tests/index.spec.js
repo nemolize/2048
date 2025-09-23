@@ -13,12 +13,12 @@ test("should load the 2048 game", async ({ page }) => {
   await expect(page.getByText("Score: 0")).toBeVisible();
 
   // Check that the game board is present
-  const gameBoard = page.locator(".grid-cols-4");
+  const gameBoard = page.getByRole("grid");
   await expect(gameBoard).toBeVisible();
 
   // Check that tiles are present in the game board
-  const tiles = gameBoard.locator(".aspect-square");
-  await expect(tiles).toHaveCount(16); // 4x4 grid
+  const cells = gameBoard.locator('[role="presentation"]');
+  await expect(cells).toHaveCount(16); // 4x4 grid placeholders
 
   // Check reset button is visible
   await expect(page.getByRole("button", { name: "Reset Game" })).toBeVisible();
@@ -35,7 +35,7 @@ test("should handle game interactions", async ({ page }) => {
   const initialScore = parseInt(scoreText.match(/\d+/)[0]);
 
   // Simulate a swipe (drag) gesture
-  const gameBoard = page.locator(".grid-cols-4");
+  const gameBoard = page.getByRole("grid");
   const box = await gameBoard.boundingBox();
 
   // Swipe left
@@ -57,7 +57,7 @@ test("should reset the game", async ({ page }) => {
   await page.goto("/");
 
   // Make some moves first
-  const gameBoard = page.locator(".grid-cols-4");
+  const gameBoard = page.getByRole("grid");
   const box = await gameBoard.boundingBox();
 
   // Swipe in different directions
@@ -73,4 +73,59 @@ test("should reset the game", async ({ page }) => {
 
   // Score should be back to 0
   await expect(page.getByText("Score: 0")).toBeVisible();
+});
+
+test("tiles remain square and aligned", async ({ page }) => {
+  await page.goto("/");
+
+  const board = page.getByRole("grid");
+  await expect(board).toBeVisible();
+
+  const tileSnapshot = await board.evaluate((boardElement) => {
+    const tilesLayer = boardElement.querySelector('[role="group"]');
+    if (!tilesLayer) {
+      return null;
+    }
+
+    const boardRect = boardElement.getBoundingClientRect();
+    const tiles = Array.from(
+      tilesLayer.querySelectorAll('[role="gridcell"]'),
+    ).map((tile) => {
+      const rect = tile.getBoundingClientRect();
+      return {
+        width: rect.width,
+        height: rect.height,
+        rowStart: Number.parseInt(tile.style.gridRowStart ?? "0", 10),
+        colStart: Number.parseInt(tile.style.gridColumnStart ?? "0", 10),
+      };
+    });
+
+    return {
+      boardWidth: boardRect.width,
+      boardHeight: boardRect.height,
+      tiles,
+    };
+  });
+
+  expect(tileSnapshot).not.toBeNull();
+  const { boardWidth, boardHeight, tiles } = tileSnapshot ?? {
+    boardWidth: 0,
+    boardHeight: 0,
+    tiles: [],
+  };
+
+  expect(Math.abs(boardWidth - boardHeight)).toBeLessThan(1);
+  expect(tiles.length).toBeGreaterThan(0);
+
+  const baseWidth = tiles[0]?.width ?? 0;
+  tiles.forEach((tile) => {
+    expect(tile.width).toBeGreaterThan(0);
+    expect(tile.height).toBeGreaterThan(0);
+    expect(Math.abs(tile.width - tile.height)).toBeLessThan(1);
+    expect(Math.abs(tile.width - baseWidth)).toBeLessThan(1);
+    expect(tile.rowStart).toBeGreaterThanOrEqual(1);
+    expect(tile.rowStart).toBeLessThanOrEqual(4);
+    expect(tile.colStart).toBeGreaterThanOrEqual(1);
+    expect(tile.colStart).toBeLessThanOrEqual(4);
+  });
 });

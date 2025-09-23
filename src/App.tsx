@@ -37,7 +37,10 @@ const App = () => {
     >
       <div className="flex flex-col items-center gap-4 px-4 sm:gap-6 md:gap-8">
         <div className="text-center">
-          <h1 className="mb-2 text-[10vw] font-bold sm:mb-4 sm:text-5xl md:text-6xl">
+          <h1
+            role="game-title"
+            className="mb-2 text-[10vw] font-bold sm:mb-4 sm:text-5xl md:text-6xl"
+          >
             2048
           </h1>
           <div className="mb-2 text-[5vw] sm:mb-4 sm:text-xl md:text-2xl">

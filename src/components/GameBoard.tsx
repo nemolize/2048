@@ -26,18 +26,27 @@ export const GameBoard = ({ grid, tiles }: GameBoardProps) => {
         "touch-none select-none",
       )}
       style={{ touchAction: "none" }}
+      role="grid"
     >
       <div className={clsx(boardGridClasses, "h-full")}>
         {grid.map((row, rowIndex) =>
           row.map((_, colIndex) => {
             const cellKey = `cell-${rowIndex}-${colIndex}`;
-            return <div key={cellKey} className="rounded-md bg-gray-600" />;
+            return (
+              <div
+                key={cellKey}
+                aria-hidden="true"
+                role="presentation"
+                className="rounded-md bg-gray-600"
+              />
+            );
           }),
         )}
       </div>
 
       <motion.div
         layout
+        role="group"
         className={clsx(
           "pointer-events-none absolute inset-0",
           "h-full",
