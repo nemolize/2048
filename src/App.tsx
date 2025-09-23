@@ -1,64 +1,30 @@
-import "@interactjs/auto-start";
-import "@interactjs/actions/drag";
-import "@interactjs/actions/gesture";
-
-import interact from "@interactjs/interact";
-import type { InteractEvent } from "@interactjs/types";
 import clsx from "clsx";
-import { useEffect, useRef } from "react";
+import type { PanInfo } from "motion/react";
+import { motion } from "motion/react";
+import { useCallback } from "react";
 
 import { GameBoard } from "./components/GameBoard";
 import { useGame2048 } from "./hooks/useGame2048";
 
 const App = () => {
   const { grid, score, gameOver, won, makeMove, resetGame } = useGame2048();
-  const gameBoardRef = useRef<HTMLDivElement>(null);
 
-  // Handle swipe gestures with interact.js
-  useEffect(() => {
-    if (!gameBoardRef.current) return;
+  const handleSwipe = useCallback(
+    (_event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
+      const { x, y } = info.offset;
+      const distance = Math.hypot(x, y);
 
-    let startX = 0;
-    let startY = 0;
-    let hasSwiped = false;
+      if (distance < 30) return;
 
-    const interactable = interact(gameBoardRef.current).draggable({
-      listeners: {
-        start(event: InteractEvent) {
-          startX = event.page.x;
-          startY = event.page.y;
-          hasSwiped = false;
-        },
-        move(event: InteractEvent) {
-          if (hasSwiped) return;
+      if (Math.abs(x) > Math.abs(y)) {
+        makeMove(x > 0 ? "right" : "left");
+        return;
+      }
 
-          const deltaX = event.page.x - startX;
-          const deltaY = event.page.y - startY;
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-          // Only trigger on significant swipes
-          if (distance < 30) return;
-
-          hasSwiped = true;
-
-          const absX = Math.abs(deltaX);
-          const absY = Math.abs(deltaY);
-
-          if (absX > absY) {
-            // Horizontal swipe
-            makeMove(deltaX > 0 ? "right" : "left");
-          } else {
-            // Vertical swipe
-            makeMove(deltaY > 0 ? "down" : "up");
-          }
-        },
-      },
-    });
-
-    return () => {
-      interactable.unset();
-    };
-  }, [makeMove]);
+      makeMove(y > 0 ? "down" : "up");
+    },
+    [makeMove],
+  );
 
   return (
     <div
@@ -78,9 +44,17 @@ const App = () => {
           </div>
         </div>
 
-        <div ref={gameBoardRef}>
+        <motion.div
+          drag
+          dragConstraints={{ top: 0, bottom: 0, left: 0, right: 0 }}
+          dragElastic={0}
+          dragMomentum={false}
+          dragSnapToOrigin
+          onPanEnd={handleSwipe}
+          style={{ touchAction: "none" }}
+        >
           <GameBoard grid={grid} />
-        </div>
+        </motion.div>
 
         {(gameOver || won) && (
           <div className="text-center">

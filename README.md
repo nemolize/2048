@@ -5,7 +5,7 @@ An implementation of the classic 2048 puzzle game built with React, TypeScript, 
 ## Features
 
 - **Classic 2048 gameplay**
-- **Touch/swipe controls** for mobile devices using interact.js
+- **Touch/swipe controls** for mobile devices powered by Motion
 - **Keyboard controls** for desktop (arrow keys)
 - **Responsive design** that works on all screen sizes
 - **Game state management** with score tracking and win/lose detection
