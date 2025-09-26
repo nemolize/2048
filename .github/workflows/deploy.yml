@@ -19,13 +19,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: marocchino/sticky-pull-request-comment@v2
+        name: Show wip message in sticky comment
         with:
-          message: |
-            Version Preview URL: ⏳ deployment is in progress...
+          message: "Version Preview URL: ⏳deployment is in progress..."
 
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup
+
       - uses: nemolize/set-wrangler-name@v1
+
       - run: pnpm run build
 
       - id: deploy
@@ -36,8 +38,13 @@ jobs:
           command: ${{ github.event_name == 'push' && 'deploy' || 'versions upload' }}
 
       - if: ${{ github.event_name == 'pull_request' }}
-        name: Post preview URL comment
+        name: Show version preview URL in sticky comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          message: |
-            Version Preview URL: ${{ steps.deploy.outputs.deployment-url }}
+          message: "Version Preview URL: ${{ steps.deploy.outputs.deployment-url }}"
+
+      - if: failure()
+        name: Show error message in sticky comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: "Version Preview URL: ❌deployment failed."
