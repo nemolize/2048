@@ -17,6 +17,9 @@ permissions:
 jobs:
   Deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
+      url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
       - uses: marocchino/sticky-pull-request-comment@v2
         name: Show wip message in sticky comment
