@@ -1,17 +1,9 @@
 import type { PanInfo } from "motion/react";
 import { motion } from "motion/react";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 import { GameBoard } from "./components/GameBoard";
-import type { Direction } from "./hooks/useGame2048";
 import { useGame2048 } from "./hooks/useGame2048";
-
-const keyDirectionMap: Record<string, Direction> = {
-  ArrowUp: "up",
-  ArrowDown: "down",
-  ArrowLeft: "left",
-  ArrowRight: "right",
-};
 
 const App = () => {
   const { grid, tiles, score, gameOver, won, makeMove, resetGame } =
@@ -34,19 +26,6 @@ const App = () => {
     },
     [makeMove],
   );
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const direction = keyDirectionMap[event.key];
-      if (direction) {
-        event.preventDefault();
-        makeMove(direction);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [makeMove]);
 
   return (
     <div className="flex h-screen min-h-screen items-center justify-center overflow-hidden bg-gray-900 text-white">
@@ -72,7 +51,7 @@ const App = () => {
           onPanEnd={handleSwipe}
           style={{ touchAction: "none" }}
         >
-          <GameBoard grid={grid} tiles={tiles} />
+          <GameBoard grid={grid} tiles={tiles} onMove={makeMove} />
         </motion.div>
 
         {(gameOver || won) && (
