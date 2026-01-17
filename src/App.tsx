@@ -1,10 +1,17 @@
-import clsx from "clsx";
 import type { PanInfo } from "motion/react";
 import { motion } from "motion/react";
 import { useCallback, useEffect } from "react";
 
 import { GameBoard } from "./components/GameBoard";
+import type { Direction } from "./hooks/useGame2048";
 import { useGame2048 } from "./hooks/useGame2048";
+
+const keyDirectionMap: Record<string, Direction> = {
+  ArrowUp: "up",
+  ArrowDown: "down",
+  ArrowLeft: "left",
+  ArrowRight: "right",
+};
 
 const App = () => {
   const { grid, tiles, score, gameOver, won, makeMove, resetGame } =
@@ -13,39 +20,27 @@ const App = () => {
   const handleSwipe = useCallback(
     (_event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
       const { x, y } = info.offset;
-      const distance = Math.hypot(x, y);
+      if (Math.hypot(x, y) < 30) return;
 
-      if (distance < 30) return;
-
-      if (Math.abs(x) > Math.abs(y)) {
-        makeMove(x > 0 ? "right" : "left");
-        return;
-      }
-
-      makeMove(y > 0 ? "down" : "up");
+      makeMove(
+        Math.abs(x) > Math.abs(y)
+          ? x > 0
+            ? "right"
+            : "left"
+          : y > 0
+            ? "down"
+            : "up",
+      );
     },
     [makeMove],
   );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      switch (event.key) {
-        case "ArrowUp":
-          event.preventDefault();
-          makeMove("up");
-          break;
-        case "ArrowDown":
-          event.preventDefault();
-          makeMove("down");
-          break;
-        case "ArrowLeft":
-          event.preventDefault();
-          makeMove("left");
-          break;
-        case "ArrowRight":
-          event.preventDefault();
-          makeMove("right");
-          break;
+      const direction = keyDirectionMap[event.key];
+      if (direction) {
+        event.preventDefault();
+        makeMove(direction);
       }
     };
 
@@ -54,13 +49,7 @@ const App = () => {
   }, [makeMove]);
 
   return (
-    <div
-      className={clsx(
-        "flex h-screen min-h-screen",
-        "items-center justify-center",
-        "overflow-hidden bg-gray-900 text-white",
-      )}
-    >
+    <div className="flex h-screen min-h-screen items-center justify-center overflow-hidden bg-gray-900 text-white">
       <div className="flex flex-col items-center gap-4 px-4 sm:gap-6 md:gap-8">
         <div className="text-center">
           <h1
@@ -93,11 +82,7 @@ const App = () => {
             </div>
             <button
               onClick={resetGame}
-              className={clsx(
-                "rounded-lg bg-blue-500 px-6 py-3",
-                "font-bold text-white",
-                "transition-colors hover:bg-blue-700",
-              )}
+              className="rounded-lg bg-blue-500 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-700"
               type="button"
             >
               New Game
@@ -111,10 +96,7 @@ const App = () => {
           </p>
           <button
             onClick={resetGame}
-            className={clsx(
-              "rounded bg-gray-700 px-4 py-2 text-sm",
-              "transition-colors hover:bg-gray-600",
-            )}
+            className="rounded bg-gray-700 px-4 py-2 text-sm transition-colors hover:bg-gray-600"
             type="button"
           >
             Reset Game
