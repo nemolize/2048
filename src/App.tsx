@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import type { PanInfo } from "motion/react";
 import { motion } from "motion/react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import { GameBoard } from "./components/GameBoard";
 import { useGame2048 } from "./hooks/useGame2048";
@@ -26,6 +26,32 @@ const App = () => {
     },
     [makeMove],
   );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case "ArrowUp":
+          event.preventDefault();
+          makeMove("up");
+          break;
+        case "ArrowDown":
+          event.preventDefault();
+          makeMove("down");
+          break;
+        case "ArrowLeft":
+          event.preventDefault();
+          makeMove("left");
+          break;
+        case "ArrowRight":
+          event.preventDefault();
+          makeMove("right");
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [makeMove]);
 
   return (
     <div
@@ -80,7 +106,9 @@ const App = () => {
         )}
 
         <div className="text-center text-gray-400">
-          <p className="mb-2 text-[3.5vw] sm:text-base">Swipe to play</p>
+          <p className="mb-2 text-[3.5vw] sm:text-base">
+            Swipe or use arrow keys to play
+          </p>
           <button
             onClick={resetGame}
             className={clsx(
