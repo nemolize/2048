@@ -24,7 +24,7 @@ test("should load the 2048 game", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Reset Game" })).toBeVisible();
 
   // Check swipe instructions
-  await expect(page.getByText("Swipe to play")).toBeVisible();
+  await expect(page.getByText("Swipe or use arrow keys to play")).toBeVisible();
 });
 
 test("should handle game interactions", async ({ page }) => {
