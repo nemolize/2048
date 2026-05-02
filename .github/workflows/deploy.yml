@@ -26,7 +26,7 @@ jobs:
         with:
           message: "Version Preview URL: ⏳deployment is in progress..."
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
 
       - uses: nemolize/set-wrangler-name@v1
