@@ -21,7 +21,7 @@ jobs:
       name: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
       url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
-      - uses: marocchino/sticky-pull-request-comment@v2
+      - uses: marocchino/sticky-pull-request-comment@v3.0.4
         name: Show wip message in sticky comment
         with:
           message: "Version Preview URL: ⏳deployment is in progress..."
@@ -42,12 +42,12 @@ jobs:
 
       - if: ${{ github.event_name == 'pull_request' }}
         name: Show version preview URL in sticky comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3.0.4
         with:
           message: "Version Preview URL: ${{ steps.deploy.outputs.deployment-url }}"
 
       - if: failure()
         name: Show error message in sticky comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3.0.4
         with:
           message: "Version Preview URL: ❌deployment failed."
