@@ -1,8 +1,11 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type Direction = "up" | "down" | "left" | "right";
 
 const GRID_SIZE = 4;
+
+// How long merged-away ghost tiles stay rendered (covers the slide animation).
+const GHOST_LIFETIME_MS = 350;
 
 let tileIdCounter = 0;
 const nextTileId = () => `tile-${++tileIdCounter}`;
@@ -14,6 +17,8 @@ export interface TileState {
   col: number;
   isNew: boolean;
   isMerged: boolean;
+  /** A tile consumed by a merge, kept alive so it can slide into the merge cell. */
+  isGhost?: boolean;
 }
 
 type Board = (TileState | null)[][];
@@ -65,6 +70,7 @@ const addRandomTile = (board: Board): Board => {
 
 interface MoveResult {
   board: Board;
+  ghosts: TileState[];
   score: number;
   moved: boolean;
 }
@@ -76,11 +82,17 @@ const compressLine = (
   fixedIndex: number,
   orientation: Orientation,
   reverse: boolean,
-): { line: (TileState | null)[]; score: number; moved: boolean } => {
+): {
+  line: (TileState | null)[];
+  ghosts: TileState[];
+  score: number;
+  moved: boolean;
+} => {
   const workingLine = reverse ? [...line].reverse() : line;
   const filtered = workingLine.filter((t): t is TileState => t != null);
 
   const result: (TileState | null)[] = Array(GRID_SIZE).fill(null);
+  const ghosts: TileState[] = [];
   let score = 0;
   let moved = false;
   let targetIndex = 0;
@@ -95,8 +107,21 @@ const compressLine = (
         : [targetPos, fixedIndex];
 
     if (current && next && current.value === next.value) {
+      // Keep `current`'s id so the surviving tile slides into the merge cell
+      // (same React key -> continuous layout animation) instead of remounting.
       result[targetIndex] = createTile(row, col, current.value * 2, {
+        id: current.id,
         isMerged: true,
+      });
+      // Keep the consumed tile as a ghost that slides into the same cell
+      // underneath the merged tile, then gets removed.
+      ghosts.push({
+        ...next,
+        row,
+        col,
+        isNew: false,
+        isMerged: false,
+        isGhost: true,
       });
       score += current.value * 2;
       moved = true;
@@ -113,26 +138,29 @@ const compressLine = (
     }
   }
 
-  return { line: reverse ? result.reverse() : result, score, moved };
+  return { line: reverse ? result.reverse() : result, ghosts, score, moved };
 };
 
 const moveHorizontal = (board: Board, reverse: boolean): MoveResult => {
   let moved = false;
   let score = 0;
+  const ghosts: TileState[] = [];
 
   const nextBoard = board.map((row, rowIndex) => {
     const result = compressLine(row, rowIndex, "horizontal", reverse);
     if (result.moved) moved = true;
     score += result.score;
+    ghosts.push(...result.ghosts);
     return result.line;
   });
 
-  return { board: nextBoard, score, moved };
+  return { board: nextBoard, ghosts, score, moved };
 };
 
 const moveVertical = (board: Board, reverse: boolean): MoveResult => {
   let moved = false;
   let score = 0;
+  const ghosts: TileState[] = [];
   const nextBoard = createEmptyBoard();
 
   for (let col = 0; col < GRID_SIZE; col++) {
@@ -140,13 +168,14 @@ const moveVertical = (board: Board, reverse: boolean): MoveResult => {
     const result = compressLine(column, col, "vertical", reverse);
     if (result.moved) moved = true;
     score += result.score;
+    ghosts.push(...result.ghosts);
     for (let row = 0; row < GRID_SIZE; row++) {
       const targetRow = nextBoard[row];
       if (targetRow) targetRow[col] = result.line[row] ?? null;
     }
   }
 
-  return { board: nextBoard, score, moved };
+  return { board: nextBoard, ghosts, score, moved };
 };
 
 const moveBoard = (board: Board, direction: Direction): MoveResult => {
@@ -180,14 +209,21 @@ const checkWin = (board: Board): boolean =>
 const initializeBoard = (): Board =>
   addRandomTile(addRandomTile(createEmptyBoard()));
 
+const compareTileIds = (a: TileState, b: TileState) =>
+  a.id.localeCompare(b.id, undefined, { numeric: true });
+
 export const useGame2048 = () => {
   const [board, setBoard] = useState<Board>(initializeBoard);
+  const [ghosts, setGhosts] = useState<TileState[]>([]);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   // Mirror of `board` so rapid successive moves (before React re-renders)
   // always compute from the latest board without impure updater side effects.
   const boardRef = useRef(board);
+  const ghostTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(ghostTimeoutRef.current), []);
 
   const makeMove = useCallback(
     (direction: Direction) => {
@@ -195,6 +231,7 @@ export const useGame2048 = () => {
 
       const {
         board: movedBoard,
+        ghosts: mergeGhosts,
         score: gainedScore,
         moved,
       } = moveBoard(boardRef.current, direction);
@@ -205,6 +242,17 @@ export const useGame2048 = () => {
       setBoard(boardWithNewTile);
       setScore((prev) => prev + gainedScore);
 
+      // Ghosts slide into their merge cell (hidden under the merged tile),
+      // then get dropped once the slide animation has settled.
+      setGhosts(mergeGhosts);
+      clearTimeout(ghostTimeoutRef.current);
+      if (mergeGhosts.length > 0) {
+        ghostTimeoutRef.current = setTimeout(
+          () => setGhosts([]),
+          GHOST_LIFETIME_MS,
+        );
+      }
+
       if (checkWin(boardWithNewTile)) setWon(true);
       else if (checkGameOver(boardWithNewTile)) setGameOver(true);
     },
@@ -212,9 +260,11 @@ export const useGame2048 = () => {
   );
 
   const resetGame = useCallback(() => {
+    clearTimeout(ghostTimeoutRef.current);
     const freshBoard = initializeBoard();
     boardRef.current = freshBoard;
     setBoard(freshBoard);
+    setGhosts([]);
     setScore(0);
     setGameOver(false);
     setWon(false);
@@ -224,9 +274,15 @@ export const useGame2048 = () => {
     () => board.map((row) => row.map((cell) => cell?.value ?? 0)),
     [board],
   );
+  // Stable id-sorted order keeps DOM order constant across moves, so React
+  // never reorders tile nodes mid-animation. Z-order is handled via zIndex.
   const tiles = useMemo(
-    () => board.flat().filter((cell): cell is TileState => cell != null),
-    [board],
+    () =>
+      [
+        ...board.flat().filter((cell): cell is TileState => cell != null),
+        ...ghosts,
+      ].sort(compareTileIds),
+    [board, ghosts],
   );
 
   return { grid, tiles, score, gameOver, won, makeMove, resetGame };

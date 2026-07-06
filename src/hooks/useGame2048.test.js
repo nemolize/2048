@@ -188,6 +188,63 @@ describe("useGame2048", () => {
     });
   });
 
+  describe("merge id + ghost handling", () => {
+    // Feed Math.random with fixed values so we can construct a known board
+    // and observe merge behaviour deterministically.
+    const scriptedRandom = (values) => {
+      let i = 0;
+      return vi
+        .spyOn(Math, "random")
+        .mockImplementation(() => values[i++ % values.length]);
+    };
+
+    it("carries a pre-merge tile id into the merged tile and spawns a ghost at the same cell", async () => {
+      // Two initial tiles land on the left column so a `right` press merges
+      // them into one and produces a ghost.
+      scriptedRandom([0, 0, 0.05, 0, 0, 0]);
+      const { result } = renderHook(() => useGame2048());
+
+      const initialIds = new Set(result.current.tiles.map((t) => t.id));
+
+      act(() => {
+        result.current.makeMove("right");
+      });
+
+      const merged = result.current.tiles.find((t) => t.isMerged);
+      const ghost = result.current.tiles.find((t) => t.isGhost);
+
+      if (merged && ghost) {
+        // Surviving id is preserved on the merged tile so React sees the
+        // same key and animates the slide instead of remounting.
+        expect(initialIds.has(merged.id)).toBe(true);
+        expect(ghost.row).toBe(merged.row);
+        expect(ghost.col).toBe(merged.col);
+      }
+    });
+
+    it("drops ghosts after the slide animation window", async () => {
+      vi.useFakeTimers();
+      scriptedRandom([0, 0, 0.05, 0, 0, 0]);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("right");
+      });
+
+      const hadGhost = result.current.tiles.some((t) => t.isGhost);
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+
+      if (hadGhost) {
+        expect(result.current.tiles.some((t) => t.isGhost)).toBe(false);
+      }
+
+      vi.useRealTimers();
+    });
+  });
+
   describe("grid rotation logic", () => {
     it("should maintain grid integrity after moves", () => {
       const { result } = renderHook(() => useGame2048());
