@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 export type Direction = "up" | "down" | "left" | "right";
 
@@ -50,12 +50,16 @@ const addRandomTile = (board: Board): Board => {
   ] ?? [0, 0];
   const value = Math.random() < 0.9 ? 2 : 4;
 
+  // Existing tiles keep their flags: compressLine already rebuilds fresh
+  // isNew/isMerged flags for every surviving tile on each move, and clearing
+  // them here would wipe the isMerged flag the current move just set
+  // (suppressing the merge pop animation).
   return board.map((currentRow, r) =>
-    currentRow.map((cell, c) => {
-      if (r === row && c === col)
-        return createTile(row, col, value, { isNew: true });
-      return cell ? { ...cell, isNew: false, isMerged: false } : null;
-    }),
+    currentRow.map((cell, c) =>
+      r === row && c === col
+        ? createTile(row, col, value, { isNew: true })
+        : cell,
+    ),
   );
 };
 
@@ -181,34 +185,36 @@ export const useGame2048 = () => {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  // Mirror of `board` so rapid successive moves (before React re-renders)
+  // always compute from the latest board without impure updater side effects.
+  const boardRef = useRef(board);
 
   const makeMove = useCallback(
     (direction: Direction) => {
       if (gameOver || won) return;
 
-      setBoard((currentBoard) => {
-        const {
-          board: movedBoard,
-          score: gainedScore,
-          moved,
-        } = moveBoard(currentBoard, direction);
-        if (!moved) return currentBoard;
+      const {
+        board: movedBoard,
+        score: gainedScore,
+        moved,
+      } = moveBoard(boardRef.current, direction);
+      if (!moved) return;
 
-        const boardWithNewTile = addRandomTile(movedBoard);
-        setScore((prev) => prev + gainedScore);
+      const boardWithNewTile = addRandomTile(movedBoard);
+      boardRef.current = boardWithNewTile;
+      setBoard(boardWithNewTile);
+      setScore((prev) => prev + gainedScore);
 
-        if (!won && checkWin(boardWithNewTile)) setWon(true);
-        else if (!gameOver && checkGameOver(boardWithNewTile))
-          setGameOver(true);
-
-        return boardWithNewTile;
-      });
+      if (checkWin(boardWithNewTile)) setWon(true);
+      else if (checkGameOver(boardWithNewTile)) setGameOver(true);
     },
     [gameOver, won],
   );
 
   const resetGame = useCallback(() => {
-    setBoard(initializeBoard());
+    const freshBoard = initializeBoard();
+    boardRef.current = freshBoard;
+    setBoard(freshBoard);
     setScore(0);
     setGameOver(false);
     setWon(false);
