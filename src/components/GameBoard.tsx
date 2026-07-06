@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { useEffect, useRef } from "react";
 
 import type { Direction, TileState } from "../hooks/useGame2048";
@@ -60,25 +60,26 @@ export const GameBoard = ({ grid, tiles, onMove }: GameBoardProps) => {
         ))}
       </div>
 
-      <motion.div
-        layout
+      <div
         role="group"
         className={clsx(
           "pointer-events-none absolute inset-0 h-full",
           gridClasses,
         )}
       >
-        {tiles.map((tile) => (
-          <Tile
-            key={tile.id}
-            tile={tile}
-            style={{
-              gridColumnStart: tile.col + 1,
-              gridRowStart: tile.row + 1,
-            }}
-          />
-        ))}
-      </motion.div>
+        <AnimatePresence>
+          {tiles.map((tile) => (
+            <Tile
+              key={tile.id}
+              tile={tile}
+              style={{
+                gridColumnStart: tile.col + 1,
+                gridRowStart: tile.row + 1,
+              }}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };

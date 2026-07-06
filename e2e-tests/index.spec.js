@@ -88,17 +88,17 @@ test("tiles remain square and aligned", async ({ page }) => {
     }
 
     const boardRect = boardElement.getBoundingClientRect();
+    // Use offsetWidth/Height (layout box, ignores transform) instead of
+    // getBoundingClientRect (transform-aware) so in-flight scale animations
+    // don't perturb the measurements this test cares about.
     const tiles = Array.from(
       tilesLayer.querySelectorAll('[role="gridcell"]'),
-    ).map((tile) => {
-      const rect = tile.getBoundingClientRect();
-      return {
-        width: rect.width,
-        height: rect.height,
-        rowStart: Number.parseInt(tile.style.gridRowStart ?? "0", 10),
-        colStart: Number.parseInt(tile.style.gridColumnStart ?? "0", 10),
-      };
-    });
+    ).map((tile) => ({
+      width: tile.offsetWidth,
+      height: tile.offsetHeight,
+      rowStart: Number.parseInt(tile.style.gridRowStart ?? "0", 10),
+      colStart: Number.parseInt(tile.style.gridColumnStart ?? "0", 10),
+    }));
 
     return {
       boardWidth: boardRect.width,
