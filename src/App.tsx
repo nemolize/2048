@@ -1,5 +1,5 @@
 import type { PanInfo } from "motion/react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback } from "react";
 
 import { GameBoard } from "./components/GameBoard";
@@ -54,20 +54,34 @@ const App = () => {
           <GameBoard grid={grid} tiles={tiles} onMove={makeMove} />
         </motion.div>
 
-        {(gameOver || won) && (
-          <div className="text-center">
-            <div className="mb-2 text-[6vw] font-bold sm:mb-4 sm:text-2xl md:text-3xl">
-              {won ? "You Win! 🎉" : "Game Over!"}
-            </div>
-            <button
-              onClick={resetGame}
-              className="rounded-lg bg-blue-500 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-700"
-              type="button"
+        <AnimatePresence>
+          {(gameOver || won) && (
+            <motion.div
+              key="game-state-overlay"
+              className="text-center"
+              initial={{ opacity: 0, scale: 0.8, y: -8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -4 }}
+              transition={{
+                type: "spring",
+                stiffness: 380,
+                damping: 26,
+                mass: 0.7,
+              }}
             >
-              New Game
-            </button>
-          </div>
-        )}
+              <div className="mb-2 text-[6vw] font-bold sm:mb-4 sm:text-2xl md:text-3xl">
+                {won ? "You Win! 🎉" : "Game Over!"}
+              </div>
+              <button
+                onClick={resetGame}
+                className="rounded-lg bg-blue-500 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-700"
+                type="button"
+              >
+                New Game
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="text-center text-gray-400">
           <p className="mb-2 text-[3.5vw] sm:text-base">
