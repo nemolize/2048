@@ -27,7 +27,12 @@ const tileColors: Record<number, string> = {
 // The move (layout) transition takes ~300ms; hold the pop / spawn scale
 // changes back until the slide has essentially settled so the two effects
 // don't fight for the same transform.
-const MOVE_TRANSITION = { type: "spring" as const, stiffness: 450, damping: 30, mass: 0.6 };
+const MOVE_TRANSITION = {
+  type: "spring" as const,
+  stiffness: 450,
+  damping: 30,
+  mass: 0.6,
+};
 const POP_DELAY_S = 0.05;
 const SPAWN_DELAY_S = 0.1;
 
