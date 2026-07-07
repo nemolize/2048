@@ -13,7 +13,7 @@ test("should load the 2048 game", async ({ page }) => {
   await expect(page.getByText("Score: 0")).toBeVisible();
 
   // Check that the game board is present
-  const gameBoard = page.getByRole("grid");
+  const gameBoard = page.getByRole("application");
   await expect(gameBoard).toBeVisible();
 
   // Check that tiles are present in the game board
@@ -35,7 +35,7 @@ test("should handle game interactions", async ({ page }) => {
   const initialScore = parseInt(scoreText.match(/\d+/)[0]);
 
   // Simulate a swipe (drag) gesture
-  const gameBoard = page.getByRole("grid");
+  const gameBoard = page.getByRole("application");
   const box = await gameBoard.boundingBox();
 
   // Swipe left
@@ -57,7 +57,7 @@ test("should reset the game", async ({ page }) => {
   await page.goto("/");
 
   // Make some moves first
-  const gameBoard = page.getByRole("grid");
+  const gameBoard = page.getByRole("application");
   const box = await gameBoard.boundingBox();
 
   // Swipe in different directions
@@ -78,27 +78,22 @@ test("should reset the game", async ({ page }) => {
 test("tiles remain square and aligned", async ({ page }) => {
   await page.goto("/");
 
-  const board = page.getByRole("grid");
+  const board = page.getByRole("application");
   await expect(board).toBeVisible();
 
   const tileSnapshot = await board.evaluate((boardElement) => {
-    const tilesLayer = boardElement.querySelector('[role="group"]');
-    if (!tilesLayer) {
-      return null;
-    }
-
     const boardRect = boardElement.getBoundingClientRect();
     // Use offsetWidth/Height (layout box, ignores transform) instead of
     // getBoundingClientRect (transform-aware) so in-flight scale animations
     // don't perturb the measurements this test cares about.
-    const tiles = Array.from(
-      tilesLayer.querySelectorAll('[role="gridcell"]'),
-    ).map((tile) => ({
-      width: tile.offsetWidth,
-      height: tile.offsetHeight,
-      rowStart: Number.parseInt(tile.style.gridRowStart ?? "0", 10),
-      colStart: Number.parseInt(tile.style.gridColumnStart ?? "0", 10),
-    }));
+    const tiles = Array.from(boardElement.querySelectorAll('[role="img"]')).map(
+      (tile) => ({
+        width: tile.offsetWidth,
+        height: tile.offsetHeight,
+        rowStart: Number.parseInt(tile.style.gridRowStart ?? "0", 10),
+        colStart: Number.parseInt(tile.style.gridColumnStart ?? "0", 10),
+      }),
+    );
 
     return {
       boardWidth: boardRect.width,

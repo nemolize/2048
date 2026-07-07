@@ -47,7 +47,8 @@ export const GameBoard = ({ grid, tiles, onMove }: GameBoardProps) => {
         "ring-blue-500 outline-none focus:ring-4",
       )}
       style={{ touchAction: "none" }}
-      role="grid"
+      role="application"
+      aria-label="2048 game board"
     >
       <div className={clsx(gridClasses, "h-full")}>
         {grid.flat().map((_, i) => (
@@ -61,7 +62,6 @@ export const GameBoard = ({ grid, tiles, onMove }: GameBoardProps) => {
       </div>
 
       <div
-        role="group"
         className={clsx(
           "pointer-events-none absolute inset-0 h-full",
           gridClasses,

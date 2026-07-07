@@ -31,13 +31,13 @@ const App = () => {
     <div className="flex h-screen min-h-screen items-center justify-center overflow-hidden bg-gray-900 text-white">
       <div className="flex flex-col items-center gap-4 px-4 sm:gap-6 md:gap-8">
         <div className="text-center">
-          <h1
-            role="game-title"
-            className="mb-2 text-[10vw] font-bold sm:mb-4 sm:text-5xl md:text-6xl"
-          >
+          <h1 className="mb-2 text-[10vw] font-bold sm:mb-4 sm:text-5xl md:text-6xl">
             2048
           </h1>
-          <div className="mb-2 text-[5vw] sm:mb-4 sm:text-xl md:text-2xl">
+          <div
+            aria-live="polite"
+            className="mb-2 text-[5vw] sm:mb-4 sm:text-xl md:text-2xl"
+          >
             Score: {score}
           </div>
         </div>
@@ -58,6 +58,7 @@ const App = () => {
           {(gameOver || won) && (
             <motion.div
               key="game-state-overlay"
+              aria-live="polite"
               className="text-center"
               initial={{ opacity: 0, scale: 0.8, y: -8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
