@@ -477,8 +477,8 @@ describe("useGame2048", () => {
       const gridAfterMove = first.result.current.grid;
       first.unmount();
 
-      const initCallsBeforeRemount = vi.mocked(initializeBoard).mock.calls
-        .length;
+      const initCallsBeforeRemount =
+        vi.mocked(initializeBoard).mock.calls.length;
       const second = renderHook(() => useGame2048());
 
       expect(second.result.current.grid).toEqual(gridAfterMove);
