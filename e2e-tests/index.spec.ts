@@ -1,20 +1,24 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
-const readScore = async (page: Page): Promise<number> => {
-  const scoreText = await page.getByText(/Score: \d+/).textContent();
-  const match = scoreText?.match(/\d+/);
-  if (!match) throw new Error(`score text not found: ${String(scoreText)}`);
-  return Number.parseInt(match[0], 10);
-};
+import type { SwipeDirection } from "./utils";
+import { expectSwipeToChangeBoard } from "./utils";
 
-const swipeLeft = async (page: Page, gameBoard: Locator): Promise<void> => {
+const mouseSwipe = async (
+  page: Page,
+  gameBoard: Locator,
+  direction: SwipeDirection,
+): Promise<void> => {
   const box = await gameBoard.boundingBox();
   if (!box) throw new Error("game board has no bounding box");
 
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  const startX = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const endX = direction === "left" ? box.x + 50 : box.x + box.width - 50;
+
+  await page.mouse.move(startX, y);
   await page.mouse.down();
-  await page.mouse.move(box.x + 50, box.y + box.height / 2);
+  await page.mouse.move(endX, y, { steps: 5 });
   await page.mouse.up();
 };
 
@@ -34,9 +38,10 @@ test("should load the 2048 game", async ({ page }) => {
   const gameBoard = page.getByRole("application");
   await expect(gameBoard).toBeVisible();
 
-  // Check that tiles are present in the game board
+  // Check that the placeholder cells and the two starting tiles are present
   const cells = gameBoard.locator('[role="presentation"]');
   await expect(cells).toHaveCount(16); // 4x4 grid placeholders
+  await expect(gameBoard.locator('[role="img"]')).toHaveCount(2);
 
   // Check reset button is visible
   await expect(page.getByRole("button", { name: "Reset Game" })).toBeVisible();
@@ -45,37 +50,31 @@ test("should load the 2048 game", async ({ page }) => {
   await expect(page.getByText("Swipe or use arrow keys to play")).toBeVisible();
 });
 
-test("should handle game interactions", async ({ page }) => {
+test("swipe moves tiles on the board", async ({ page }) => {
   await page.goto("/");
 
-  const initialScore = await readScore(page);
-
-  // Simulate a swipe (drag) gesture
   const gameBoard = page.getByRole("application");
-  await swipeLeft(page, gameBoard);
+  await expect(gameBoard.locator('[role="img"]')).toHaveCount(2);
 
-  // Wait a bit for the game to update
-  await page.waitForTimeout(300);
-
-  // Score might have changed if tiles merged
-  const newScore = await readScore(page);
-  expect(newScore).toBeGreaterThanOrEqual(initialScore);
+  // A successful move must change the board (tiles shift and a new one
+  // spawns) — assert on the serialized board, not on the score, which is
+  // monotonic and passes even when movement is broken.
+  await expectSwipeToChangeBoard(page, gameBoard, mouseSwipe);
 });
 
 test("should reset the game", async ({ page }) => {
   await page.goto("/");
 
-  // Make some moves first
+  // Make a move that verifiably changed the board first
   const gameBoard = page.getByRole("application");
-  await swipeLeft(page, gameBoard);
-
-  await page.waitForTimeout(200);
+  await expectSwipeToChangeBoard(page, gameBoard, mouseSwipe);
 
   // Click reset button
   await page.getByRole("button", { name: "Reset Game" }).click();
 
-  // Score should be back to 0
+  // Score should be back to 0 and the board back to the two starting tiles
   await expect(page.getByText("Score: 0")).toBeVisible();
+  await expect(gameBoard.locator('[role="img"]')).toHaveCount(2);
 });
 
 test("tiles remain square and aligned", async ({ page }) => {
