@@ -209,3 +209,60 @@ export const initializeBoard = (): Board =>
 
 export const compareTileIds = (a: TileState, b: TileState) =>
   a.id.localeCompare(b.id, undefined, { numeric: true });
+
+export interface SerializedTile {
+  id: string;
+  value: number;
+  row: number;
+  col: number;
+}
+
+export type SerializedBoard = (SerializedTile | null)[][];
+
+export const serializeBoard = (board: Board): SerializedBoard =>
+  board.map((row) =>
+    row.map((cell) =>
+      cell
+        ? { id: cell.id, value: cell.value, row: cell.row, col: cell.col }
+        : null,
+    ),
+  );
+
+const isSerializedTile = (value: unknown): value is SerializedTile => {
+  if (typeof value !== "object" || value === null) return false;
+  const cell = value as Record<string, unknown>;
+  return (
+    typeof cell.id === "string" &&
+    typeof cell.value === "number" &&
+    typeof cell.row === "number" &&
+    typeof cell.col === "number"
+  );
+};
+
+export const isSerializedBoard = (value: unknown): value is SerializedBoard =>
+  Array.isArray(value) &&
+  value.length === GRID_SIZE &&
+  value.every(
+    (row) =>
+      Array.isArray(row) &&
+      row.length === GRID_SIZE &&
+      row.every((cell) => cell === null || isSerializedTile(cell)),
+  );
+
+const TILE_ID_PATTERN = /^tile-(\d+)$/;
+
+export const deserializeBoard = (serialized: SerializedBoard): Board => {
+  // Restored ids can outrank the fresh module counter after a reload; advance
+  // it so newly spawned tiles never collide with restored React keys.
+  for (const cell of serialized.flat()) {
+    const idNumber = cell ? TILE_ID_PATTERN.exec(cell.id)?.[1] : null;
+    if (idNumber != null)
+      tileIdCounter = Math.max(tileIdCounter, Number(idNumber));
+  }
+
+  return serialized.map((row) =>
+    row.map((cell) =>
+      cell ? createTile(cell.row, cell.col, cell.value, { id: cell.id }) : null,
+    ),
+  );
+};
