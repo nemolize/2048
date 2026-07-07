@@ -1,5 +1,5 @@
 import type { PanInfo } from "motion/react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useCallback } from "react";
 
 import { GameBoard } from "./components/GameBoard";
@@ -41,7 +41,7 @@ const App = () => {
           </div>
         </div>
 
-        <motion.div
+        <m.div
           drag
           dragConstraints={{ top: 0, bottom: 0, left: 0, right: 0 }}
           dragElastic={0}
@@ -51,11 +51,11 @@ const App = () => {
           style={{ touchAction: "none" }}
         >
           <GameBoard tiles={tiles} onMove={makeMove} />
-        </motion.div>
+        </m.div>
 
         <AnimatePresence>
           {(gameOver || won) && (
-            <motion.div
+            <m.div
               key="game-state-overlay"
               aria-live="polite"
               className="text-center"
@@ -79,7 +79,7 @@ const App = () => {
               >
                 New Game
               </button>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

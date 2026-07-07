@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { CSSProperties } from "react";
 
 import type { TileState } from "../hooks/useGame2048";
@@ -66,7 +66,7 @@ export const Tile = ({ tile, style }: TileProps) => {
       : { scale: 1, opacity: 1 };
 
   return (
-    <motion.div
+    <m.div
       layout
       className={clsx(
         "flex h-full w-full items-center justify-center",
@@ -91,6 +91,6 @@ export const Tile = ({ tile, style }: TileProps) => {
       transition={MOVE_TRANSITION}
     >
       {value}
-    </motion.div>
+    </m.div>
   );
 };
