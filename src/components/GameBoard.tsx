@@ -6,10 +6,11 @@ import type { Direction, TileState } from "../hooks/useGame2048";
 import { Tile } from "./Tile";
 
 interface GameBoardProps {
-  grid: number[][];
   tiles: TileState[];
   onMove: (direction: Direction) => void;
 }
+
+const CELL_COUNT = 16;
 
 const gridClasses =
   "grid grid-cols-4 grid-rows-4 gap-[2vw] p-[2vw] sm:gap-3 sm:p-3 md:gap-4 md:p-4";
@@ -21,7 +22,7 @@ const keyDirectionMap: Record<string, Direction> = {
   ArrowRight: "right",
 };
 
-export const GameBoard = ({ grid, tiles, onMove }: GameBoardProps) => {
+export const GameBoard = ({ tiles, onMove }: GameBoardProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const direction = keyDirectionMap[event.key];
@@ -45,7 +46,7 @@ export const GameBoard = ({ grid, tiles, onMove }: GameBoardProps) => {
       role="grid"
     >
       <div className={clsx(gridClasses, "h-full")}>
-        {grid.flat().map((_, i) => (
+        {Array.from({ length: CELL_COUNT }, (_, i) => (
           <div
             key={i}
             aria-hidden="true"
