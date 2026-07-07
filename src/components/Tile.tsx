@@ -80,7 +80,8 @@ export const Tile = ({ tile, style }: TileProps) => {
         // arriving at the merge cell.
         zIndex: isGhost === true ? 0 : isMerged ? 2 : 1,
       }}
-      role="gridcell"
+      role="img"
+      aria-label={`Tile with value ${value}`}
       initial={{
         opacity: isNew ? 0 : 1,
         scale: isNew ? 0.5 : 1,

@@ -43,7 +43,8 @@ export const GameBoard = ({ tiles, onMove }: GameBoardProps) => {
         "touch-none rounded-lg bg-gray-700 select-none",
       )}
       style={{ touchAction: "none" }}
-      role="grid"
+      role="application"
+      aria-label="2048 game board"
     >
       <div className={clsx(gridClasses, "h-full")}>
         {Array.from({ length: CELL_COUNT }, (_, i) => (
@@ -57,7 +58,6 @@ export const GameBoard = ({ tiles, onMove }: GameBoardProps) => {
       </div>
 
       <div
-        role="group"
         className={clsx(
           "pointer-events-none absolute inset-0 h-full",
           gridClasses,
