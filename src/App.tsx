@@ -6,7 +6,8 @@ import { GameBoard } from "./components/GameBoard";
 import { useGame2048 } from "./hooks/useGame2048";
 
 const App = () => {
-  const { tiles, score, gameOver, won, makeMove, resetGame } = useGame2048();
+  const { tiles, score, bestScore, gameOver, won, makeMove, resetGame } =
+    useGame2048();
 
   const handleSwipe = useCallback(
     (_event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
@@ -35,9 +36,10 @@ const App = () => {
           </h1>
           <div
             aria-live="polite"
-            className="mb-2 text-[5vw] sm:mb-4 sm:text-xl md:text-2xl"
+            className="mb-2 flex justify-center gap-4 text-[5vw] sm:mb-4 sm:text-xl md:text-2xl"
           >
-            Score: {score}
+            <span>Score: {score}</span>
+            <span>Best: {bestScore}</span>
           </div>
         </div>
 
