@@ -6,8 +6,21 @@ import { GameBoard } from "./components/GameBoard";
 import { useGame2048 } from "./hooks/useGame2048";
 
 const App = () => {
-  const { tiles, score, bestScore, gameOver, won, makeMove, resetGame } =
-    useGame2048();
+  const {
+    tiles,
+    score,
+    bestScore,
+    gameOver,
+    won,
+    keepPlaying,
+    makeMove,
+    resetGame,
+    startKeepPlaying,
+  } = useGame2048();
+
+  // Game over takes precedence: the board can fill up while keeping going
+  // after a win, and that must read as "Game Over!", not a second win.
+  const showWin = won && !keepPlaying && !gameOver;
 
   const handleSwipe = useCallback(
     (_event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
@@ -56,7 +69,7 @@ const App = () => {
         </m.div>
 
         <AnimatePresence>
-          {(gameOver || won) && (
+          {(gameOver || showWin) && (
             <m.div
               key="game-state-overlay"
               aria-live="polite"
@@ -72,15 +85,26 @@ const App = () => {
               }}
             >
               <div className="mb-2 text-[6vw] font-bold sm:mb-4 sm:text-2xl md:text-3xl">
-                {won ? "You Win! 🎉" : "Game Over!"}
+                {showWin ? "You Win! 🎉" : "Game Over!"}
               </div>
-              <button
-                onClick={resetGame}
-                className="rounded-lg bg-blue-500 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-700"
-                type="button"
-              >
-                New Game
-              </button>
+              <div className="flex justify-center gap-3">
+                {showWin && (
+                  <button
+                    onClick={startKeepPlaying}
+                    className="rounded-lg bg-orange-500 px-6 py-3 font-bold text-white transition-colors hover:bg-orange-700"
+                    type="button"
+                  >
+                    Keep Going
+                  </button>
+                )}
+                <button
+                  onClick={resetGame}
+                  className="rounded-lg bg-blue-500 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-700"
+                  type="button"
+                >
+                  New Game
+                </button>
+              </div>
             </m.div>
           )}
         </AnimatePresence>
