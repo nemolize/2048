@@ -17,6 +17,7 @@ permissions:
 jobs:
   Deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment:
       name: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
       url: ${{ steps.deploy.outputs.deployment-url }}
