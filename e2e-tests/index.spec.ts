@@ -1,4 +1,22 @@
+import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+
+const readScore = async (page: Page): Promise<number> => {
+  const scoreText = await page.getByText(/Score: \d+/).textContent();
+  const match = scoreText?.match(/\d+/);
+  if (!match) throw new Error(`score text not found: ${String(scoreText)}`);
+  return Number.parseInt(match[0], 10);
+};
+
+const swipeLeft = async (page: Page, gameBoard: Locator): Promise<void> => {
+  const box = await gameBoard.boundingBox();
+  if (!box) throw new Error("game board has no bounding box");
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 50, box.y + box.height / 2);
+  await page.mouse.up();
+};
 
 test("should load the 2048 game", async ({ page }) => {
   await page.goto("/");
@@ -30,26 +48,17 @@ test("should load the 2048 game", async ({ page }) => {
 test("should handle game interactions", async ({ page }) => {
   await page.goto("/");
 
-  // Get initial score
-  const scoreText = await page.getByText(/Score: \d+/).textContent();
-  const initialScore = parseInt(scoreText.match(/\d+/)[0]);
+  const initialScore = await readScore(page);
 
   // Simulate a swipe (drag) gesture
   const gameBoard = page.getByRole("application");
-  const box = await gameBoard.boundingBox();
-
-  // Swipe left
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + 50, box.y + box.height / 2);
-  await page.mouse.up();
+  await swipeLeft(page, gameBoard);
 
   // Wait a bit for the game to update
   await page.waitForTimeout(300);
 
   // Score might have changed if tiles merged
-  const newScoreText = await page.getByText(/Score: \d+/).textContent();
-  const newScore = parseInt(newScoreText.match(/\d+/)[0]);
+  const newScore = await readScore(page);
   expect(newScore).toBeGreaterThanOrEqual(initialScore);
 });
 
@@ -58,13 +67,7 @@ test("should reset the game", async ({ page }) => {
 
   // Make some moves first
   const gameBoard = page.getByRole("application");
-  const box = await gameBoard.boundingBox();
-
-  // Swipe in different directions
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + 50, box.y + box.height / 2);
-  await page.mouse.up();
+  await swipeLeft(page, gameBoard);
 
   await page.waitForTimeout(200);
 
@@ -86,14 +89,14 @@ test("tiles remain square and aligned", async ({ page }) => {
     // Use offsetWidth/Height (layout box, ignores transform) instead of
     // getBoundingClientRect (transform-aware) so in-flight scale animations
     // don't perturb the measurements this test cares about.
-    const tiles = Array.from(boardElement.querySelectorAll('[role="img"]')).map(
-      (tile) => ({
-        width: tile.offsetWidth,
-        height: tile.offsetHeight,
-        rowStart: Number.parseInt(tile.style.gridRowStart ?? "0", 10),
-        colStart: Number.parseInt(tile.style.gridColumnStart ?? "0", 10),
-      }),
-    );
+    const tiles = Array.from(
+      boardElement.querySelectorAll<HTMLElement>('[role="img"]'),
+    ).map((tile) => ({
+      width: tile.offsetWidth,
+      height: tile.offsetHeight,
+      rowStart: Number.parseInt(tile.style.gridRowStart || "0", 10),
+      colStart: Number.parseInt(tile.style.gridColumnStart || "0", 10),
+    }));
 
     return {
       boardWidth: boardRect.width,
