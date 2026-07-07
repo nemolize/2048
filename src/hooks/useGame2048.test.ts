@@ -2,7 +2,12 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Board } from "../lib/game";
-import { createTile, GHOST_LIFETIME_MS, initializeBoard } from "../lib/game";
+import {
+  createTile,
+  GHOST_LIFETIME_MS,
+  initializeBoard,
+  serializeBoard,
+} from "../lib/game";
 import {
   BEST_SCORE_STORAGE_KEY,
   GAME_STATE_STORAGE_KEY,
@@ -160,6 +165,147 @@ describe("useGame2048", () => {
         [4, 2, 4, 2],
       ]);
       expect(result.current.score).toBe(scoreBefore);
+    });
+  });
+
+  describe("keep going after a win", () => {
+    // Semantics choice: `won` stays true for the rest of the game once set;
+    // `keepPlaying` is a separate flag that unblocks moves (and, in the UI,
+    // dismisses the win overlay).
+    it("keeps won true and accepts moves again after startKeepPlaying", () => {
+      startFrom([
+        [1024, 1024, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+      expect(result.current.won).toBe(true);
+      expect(result.current.keepPlaying).toBe(false);
+
+      act(() => {
+        result.current.startKeepPlaying();
+      });
+      expect(result.current.won).toBe(true);
+      expect(result.current.keepPlaying).toBe(true);
+
+      const scoreBefore = result.current.score;
+      act(() => {
+        result.current.makeMove("right");
+      });
+
+      // The move went through: tiles slid right and a new tile spawned.
+      expect(countTiles(result.current.grid)).toBe(3);
+      expect(result.current.score).toBe(scoreBefore);
+    });
+
+    it("does not re-trigger the win state when another 2048 tile forms", () => {
+      startFrom([
+        [1024, 1024, 0, 0],
+        [512, 512, 0, 0],
+        [512, 512, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+      expect(result.current.won).toBe(true);
+
+      act(() => {
+        result.current.startKeepPlaying();
+      });
+
+      // Column 0 now holds 2048, 1024, 1024 — moving up forms a second 2048.
+      act(() => {
+        result.current.makeMove("up");
+      });
+
+      expect(result.current.grid[1]?.[0]).toBe(2048);
+      // Still in keep-playing mode (no second win overlay), moves continue.
+      expect(result.current.won).toBe(true);
+      expect(result.current.keepPlaying).toBe(true);
+      expect(result.current.gameOver).toBe(false);
+
+      const scoreBefore = result.current.score;
+      act(() => {
+        result.current.makeMove("up");
+      });
+      expect(result.current.score).toBe(scoreBefore + 4096);
+    });
+
+    it("clears keepPlaying on resetGame", () => {
+      startFrom([
+        [1024, 1024, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+      act(() => {
+        result.current.startKeepPlaying();
+      });
+      expect(result.current.keepPlaying).toBe(true);
+
+      act(() => {
+        result.current.resetGame();
+      });
+
+      expect(result.current.keepPlaying).toBe(false);
+      expect(result.current.won).toBe(false);
+    });
+
+    it("ignores startKeepPlaying before winning", () => {
+      startFrom([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.startKeepPlaying();
+      });
+
+      expect(result.current.keepPlaying).toBe(false);
+      expect(localStorage.getItem(GAME_STATE_STORAGE_KEY)).toBeNull();
+    });
+
+    it("restores keepPlaying across a remount", () => {
+      startFrom([
+        [1024, 1024, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const first = renderHook(() => useGame2048());
+
+      act(() => {
+        first.result.current.makeMove("left");
+      });
+      act(() => {
+        first.result.current.startKeepPlaying();
+      });
+      first.unmount();
+
+      const second = renderHook(() => useGame2048());
+
+      expect(second.result.current.won).toBe(true);
+      expect(second.result.current.keepPlaying).toBe(true);
     });
   });
 
@@ -365,6 +511,62 @@ describe("useGame2048", () => {
       });
 
       expect(localStorage.getItem(GAME_STATE_STORAGE_KEY)).toBeNull();
+    });
+
+    it("loads a v1 payload with keepPlaying defaulting to false", () => {
+      const storedBoard = boardFromValues([
+        [4, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      localStorage.setItem(
+        GAME_STATE_STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          board: serializeBoard(storedBoard),
+          score: 42,
+          gameOver: false,
+          won: false,
+        }),
+      );
+
+      const { result } = renderHook(() => useGame2048());
+
+      // The v1 game survives the version bump instead of being wiped.
+      expect(result.current.score).toBe(42);
+      expect(countTiles(result.current.grid)).toBe(2);
+      expect(result.current.keepPlaying).toBe(false);
+    });
+
+    it("re-saves a restored v1 game as v2 on the next move", () => {
+      const storedBoard = boardFromValues([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      localStorage.setItem(
+        GAME_STATE_STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          board: serializeBoard(storedBoard),
+          score: 0,
+          gameOver: false,
+          won: false,
+        }),
+      );
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+
+      const raw = localStorage.getItem(GAME_STATE_STORAGE_KEY);
+      expect(raw).not.toBeNull();
+      const saved: unknown = JSON.parse(raw ?? "null");
+      expect(saved).toMatchObject({ version: 2, keepPlaying: false });
     });
 
     it("falls back to a fresh game and clears the entry on corrupt JSON", () => {

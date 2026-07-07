@@ -19,7 +19,7 @@ export type { Direction, TileState } from "../lib/game";
 export const BEST_SCORE_STORAGE_KEY = "game2048:bestScore";
 export const GAME_STATE_STORAGE_KEY = "game2048:state";
 
-const GAME_STATE_VERSION = 1;
+const GAME_STATE_VERSION = 2;
 
 interface PersistedGameState {
   version: number;
@@ -27,13 +27,20 @@ interface PersistedGameState {
   score: number;
   gameOver: boolean;
   won: boolean;
+  keepPlaying: boolean;
 }
+
+// v1 payloads predate keepPlaying; they load with keepPlaying defaulting to
+// false and get re-saved as v2 on the next save.
+type StoredGameState = Omit<PersistedGameState, "keepPlaying"> &
+  Partial<Pick<PersistedGameState, "keepPlaying">>;
 
 interface GameSnapshot {
   board: Board;
   score: number;
   gameOver: boolean;
   won: boolean;
+  keepPlaying: boolean;
 }
 
 // localStorage can be absent (some test environments) or throw (privacy mode,
@@ -65,11 +72,14 @@ const safeRemoveItem = (key: string) => {
   }
 };
 
-const isPersistedGameState = (value: unknown): value is PersistedGameState => {
+const isStoredGameState = (value: unknown): value is StoredGameState => {
   if (typeof value !== "object" || value === null) return false;
   const state = value as Record<string, unknown>;
+  const versionValid =
+    state.version === 1 ||
+    (state.version === 2 && typeof state.keepPlaying === "boolean");
   return (
-    state.version === GAME_STATE_VERSION &&
+    versionValid &&
     typeof state.score === "number" &&
     typeof state.gameOver === "boolean" &&
     typeof state.won === "boolean" &&
@@ -89,12 +99,13 @@ const loadInitialSnapshot = (): GameSnapshot => {
   if (raw != null) {
     try {
       const parsed: unknown = JSON.parse(raw);
-      if (isPersistedGameState(parsed)) {
+      if (isStoredGameState(parsed)) {
         return {
           board: deserializeBoard(parsed.board),
           score: parsed.score,
           gameOver: parsed.gameOver,
           won: parsed.won,
+          keepPlaying: parsed.keepPlaying ?? false,
         };
       }
     } catch {
@@ -103,7 +114,13 @@ const loadInitialSnapshot = (): GameSnapshot => {
     safeRemoveItem(GAME_STATE_STORAGE_KEY);
   }
 
-  return { board: initializeBoard(), score: 0, gameOver: false, won: false };
+  return {
+    board: initializeBoard(),
+    score: 0,
+    gameOver: false,
+    won: false,
+    keepPlaying: false,
+  };
 };
 
 const saveGameState = (snapshot: GameSnapshot) => {
@@ -113,6 +130,7 @@ const saveGameState = (snapshot: GameSnapshot) => {
     score: snapshot.score,
     gameOver: snapshot.gameOver,
     won: snapshot.won,
+    keepPlaying: snapshot.keepPlaying,
   };
   safeSetItem(GAME_STATE_STORAGE_KEY, JSON.stringify(state));
 };
@@ -125,6 +143,7 @@ export const useGame2048 = () => {
   const [bestScore, setBestScore] = useState(loadBestScore);
   const [gameOver, setGameOver] = useState(initialSnapshot.gameOver);
   const [won, setWon] = useState(initialSnapshot.won);
+  const [keepPlaying, setKeepPlaying] = useState(initialSnapshot.keepPlaying);
   // Mirrors of `board`/`score`/`bestScore` so rapid successive moves (before
   // React re-renders) always compute from the latest values without impure
   // updater side effects.
@@ -137,7 +156,7 @@ export const useGame2048 = () => {
 
   const makeMove = useCallback(
     (direction: Direction) => {
-      if (gameOver || won) return;
+      if (gameOver || (won && !keepPlaying)) return;
 
       const {
         board: movedBoard,
@@ -172,20 +191,36 @@ export const useGame2048 = () => {
         );
       }
 
-      const nextWon = checkWin(boardWithNewTile);
-      const nextGameOver = !nextWon && checkGameOver(boardWithNewTile);
-      if (nextWon) setWon(true);
+      // The win check fires at most once per game: after the first win the
+      // player either resets (state clears) or keeps going (later 2048+ tiles
+      // must not re-trigger the overlay).
+      const justWon = !won && checkWin(boardWithNewTile);
+      const nextGameOver = !justWon && checkGameOver(boardWithNewTile);
+      if (justWon) setWon(true);
       else if (nextGameOver) setGameOver(true);
 
       saveGameState({
         board: boardWithNewTile,
         score: nextScore,
         gameOver: nextGameOver,
-        won: nextWon,
+        won: won || justWon,
+        keepPlaying,
       });
     },
-    [gameOver, won],
+    [gameOver, won, keepPlaying],
   );
+
+  const startKeepPlaying = useCallback(() => {
+    if (!won || gameOver) return;
+    setKeepPlaying(true);
+    saveGameState({
+      board: boardRef.current,
+      score: scoreRef.current,
+      gameOver: false,
+      won: true,
+      keepPlaying: true,
+    });
+  }, [won, gameOver]);
 
   const resetGame = useCallback(() => {
     clearTimeout(ghostTimeoutRef.current);
@@ -197,6 +232,7 @@ export const useGame2048 = () => {
     setScore(0);
     setGameOver(false);
     setWon(false);
+    setKeepPlaying(false);
     // Best score deliberately survives a reset.
     safeRemoveItem(GAME_STATE_STORAGE_KEY);
   }, []);
@@ -216,5 +252,16 @@ export const useGame2048 = () => {
     [board, ghosts],
   );
 
-  return { grid, tiles, score, bestScore, gameOver, won, makeMove, resetGame };
+  return {
+    grid,
+    tiles,
+    score,
+    bestScore,
+    gameOver,
+    won,
+    keepPlaying,
+    makeMove,
+    resetGame,
+    startKeepPlaying,
+  };
 };
