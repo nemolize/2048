@@ -1,6 +1,6 @@
 import type { PanInfo } from "motion/react";
 import { AnimatePresence, m } from "motion/react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import { GameBoard } from "./components/GameBoard";
 import { useGame2048 } from "./hooks/useGame2048";
@@ -13,10 +13,29 @@ const App = () => {
     gameOver,
     won,
     keepPlaying,
+    canUndo,
     makeMove,
+    undo,
     resetGame,
     startKeepPlaying,
   } = useGame2048();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd+Z (without Shift, which conventionally means redo).
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === "z"
+      ) {
+        event.preventDefault();
+        undo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undo]);
 
   // Game over takes precedence: the board can fill up while keeping going
   // after a win, and that must read as "Game Over!", not a second win.
@@ -113,13 +132,23 @@ const App = () => {
           <p className="mb-2 text-[3.5vw] sm:text-base">
             Swipe or use arrow keys to play
           </p>
-          <button
-            onClick={resetGame}
-            className="rounded bg-gray-700 px-4 py-2 text-sm transition-colors hover:bg-gray-600"
-            type="button"
-          >
-            Reset Game
-          </button>
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={undo}
+              disabled={!canUndo}
+              className="rounded bg-gray-700 px-4 py-2 text-sm transition-colors hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700"
+              type="button"
+            >
+              Undo
+            </button>
+            <button
+              onClick={resetGame}
+              className="rounded bg-gray-700 px-4 py-2 text-sm transition-colors hover:bg-gray-600"
+              type="button"
+            >
+              Reset Game
+            </button>
+          </div>
         </div>
       </div>
     </div>

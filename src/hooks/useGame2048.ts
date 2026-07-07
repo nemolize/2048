@@ -43,6 +43,16 @@ interface GameSnapshot {
   keepPlaying: boolean;
 }
 
+// Pre-move state captured for the 1-step undo. Deliberately NOT persisted:
+// undo is a session-scoped affordance, so canUndo is always false after a
+// reload. Ghosts are dropped on undo rather than snapshotted.
+interface UndoSnapshot {
+  board: Board;
+  score: number;
+  gameOver: boolean;
+  won: boolean;
+}
+
 // localStorage can be absent (some test environments) or throw (privacy mode,
 // quota exceeded) — persistence silently degrades to in-memory state.
 const safeGetItem = (key: string): string | null => {
@@ -151,6 +161,10 @@ export const useGame2048 = () => {
   const scoreRef = useRef(score);
   const bestScoreRef = useRef(bestScore);
   const ghostTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // The snapshot lives in a ref (only consumed inside callbacks); canUndo is
+  // the render-facing mirror the UI reacts to.
+  const undoSnapshotRef = useRef<UndoSnapshot | null>(null);
+  const [canUndo, setCanUndo] = useState(false);
 
   useEffect(() => () => clearTimeout(ghostTimeoutRef.current), []);
 
@@ -165,6 +179,14 @@ export const useGame2048 = () => {
         moved,
       } = moveBoard(boardRef.current, direction);
       if (!moved) return;
+
+      undoSnapshotRef.current = {
+        board: boardRef.current,
+        score: scoreRef.current,
+        gameOver,
+        won,
+      };
+      setCanUndo(true);
 
       const boardWithNewTile = addRandomTile(movedBoard);
       boardRef.current = boardWithNewTile;
@@ -210,6 +232,33 @@ export const useGame2048 = () => {
     [gameOver, won, keepPlaying],
   );
 
+  const undo = useCallback(() => {
+    const snapshot = undoSnapshotRef.current;
+    if (snapshot == null) return;
+    // The snapshot is consumed: undoing twice in a row is a no-op until the
+    // next successful move produces a fresh one.
+    undoSnapshotRef.current = null;
+    setCanUndo(false);
+
+    clearTimeout(ghostTimeoutRef.current);
+    boardRef.current = snapshot.board;
+    scoreRef.current = snapshot.score;
+    setBoard(snapshot.board);
+    setScore(snapshot.score);
+    setGhosts([]);
+    setGameOver(snapshot.gameOver);
+    setWon(snapshot.won);
+    // bestScore deliberately survives an undo.
+
+    saveGameState({
+      board: snapshot.board,
+      score: snapshot.score,
+      gameOver: snapshot.gameOver,
+      won: snapshot.won,
+      keepPlaying,
+    });
+  }, [keepPlaying]);
+
   const startKeepPlaying = useCallback(() => {
     if (!won || gameOver) return;
     setKeepPlaying(true);
@@ -224,6 +273,8 @@ export const useGame2048 = () => {
 
   const resetGame = useCallback(() => {
     clearTimeout(ghostTimeoutRef.current);
+    undoSnapshotRef.current = null;
+    setCanUndo(false);
     const freshBoard = initializeBoard();
     boardRef.current = freshBoard;
     scoreRef.current = 0;
@@ -260,7 +311,9 @@ export const useGame2048 = () => {
     gameOver,
     won,
     keepPlaying,
+    canUndo,
     makeMove,
+    undo,
     resetGame,
     startKeepPlaying,
   };

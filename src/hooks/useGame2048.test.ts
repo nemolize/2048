@@ -309,6 +309,206 @@ describe("useGame2048", () => {
     });
   });
 
+  describe("1-step undo", () => {
+    it("starts with canUndo false on a fresh game", () => {
+      const { result } = renderHook(() => useGame2048());
+
+      expect(result.current.canUndo).toBe(false);
+    });
+
+    it("does not arm undo on a move that changes nothing", () => {
+      startFrom([
+        [2, 4, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+
+      expect(result.current.canUndo).toBe(false);
+    });
+
+    it("reverts board and score to the pre-move state and consumes the snapshot", () => {
+      startFrom([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+      const gridBefore = result.current.grid;
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+      expect(result.current.canUndo).toBe(true);
+      expect(result.current.score).toBe(4);
+
+      act(() => {
+        result.current.undo();
+      });
+
+      expect(result.current.grid).toEqual(gridBefore);
+      expect(result.current.score).toBe(0);
+      expect(result.current.canUndo).toBe(false);
+      expect(result.current.tiles.some((t) => t.isGhost === true)).toBe(false);
+    });
+
+    it("makes a second consecutive undo a no-op", () => {
+      startFrom([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+      act(() => {
+        result.current.undo();
+      });
+      const gridAfterUndo = result.current.grid;
+
+      act(() => {
+        result.current.undo();
+      });
+
+      expect(result.current.grid).toEqual(gridAfterUndo);
+      expect(result.current.score).toBe(0);
+      expect(result.current.canUndo).toBe(false);
+    });
+
+    it("arms a fresh snapshot on the next move after an undo", () => {
+      startFrom([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+      act(() => {
+        result.current.undo();
+      });
+      act(() => {
+        result.current.makeMove("left");
+      });
+
+      expect(result.current.canUndo).toBe(true);
+      expect(result.current.score).toBe(4);
+    });
+
+    it("clears canUndo on resetGame", () => {
+      startFrom([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+      expect(result.current.canUndo).toBe(true);
+
+      act(() => {
+        result.current.resetGame();
+      });
+
+      expect(result.current.canUndo).toBe(false);
+    });
+
+    it("reverts a win back to won: false", () => {
+      startFrom([
+        [1024, 1024, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const { result } = renderHook(() => useGame2048());
+
+      act(() => {
+        result.current.makeMove("left");
+      });
+      expect(result.current.won).toBe(true);
+
+      act(() => {
+        result.current.undo();
+      });
+
+      expect(result.current.won).toBe(false);
+      expect(result.current.score).toBe(0);
+      // Moves are accepted again after the win is reverted.
+      act(() => {
+        result.current.makeMove("left");
+      });
+      expect(result.current.won).toBe(true);
+    });
+
+    it("does not survive a reload: canUndo is false after a remount", () => {
+      startFrom([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const first = renderHook(() => useGame2048());
+
+      act(() => {
+        first.result.current.makeMove("left");
+      });
+      expect(first.result.current.canUndo).toBe(true);
+      first.unmount();
+
+      const second = renderHook(() => useGame2048());
+
+      // The game state itself is restored, but the undo snapshot is not.
+      expect(second.result.current.score).toBe(4);
+      expect(second.result.current.canUndo).toBe(false);
+    });
+
+    it("persists the reverted state so a reload after undo restores it", () => {
+      startFrom([
+        [2, 2, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ]);
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const first = renderHook(() => useGame2048());
+      const gridBefore = first.result.current.grid;
+
+      act(() => {
+        first.result.current.makeMove("left");
+      });
+      act(() => {
+        first.result.current.undo();
+      });
+      first.unmount();
+
+      const second = renderHook(() => useGame2048());
+
+      expect(second.result.current.grid).toEqual(gridBefore);
+      expect(second.result.current.score).toBe(0);
+    });
+  });
+
   describe("tiles and ghost handling", () => {
     it("keeps the surviving id on the merged tile and places the ghost in the merge cell", () => {
       startFrom([
