@@ -22,33 +22,33 @@ jobs:
       name: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
       url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
-      - uses: marocchino/sticky-pull-request-comment@v3.0.5
+      - uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         name: Show wip message in sticky comment
         with:
           message: "Version Preview URL: ⏳deployment is in progress..."
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - uses: ./.github/actions/setup
 
-      - uses: nemolize/set-wrangler-name@v1
+      - uses: nemolize/set-wrangler-name@3630486c8e8402077ed7a3cb45c3576732777048 # v1
 
       - run: pnpm run build
 
       - id: deploy
         name: Deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: ${{ github.event_name == 'push' && 'deploy' || 'versions upload' }}
 
       - if: ${{ github.event_name == 'pull_request' }}
         name: Show version preview URL in sticky comment
-        uses: marocchino/sticky-pull-request-comment@v3.0.5
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         with:
           message: "Version Preview URL: ${{ steps.deploy.outputs.deployment-url }}"
 
       - if: failure()
         name: Show error message in sticky comment
-        uses: marocchino/sticky-pull-request-comment@v3.0.5
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         with:
           message: "Version Preview URL: ❌deployment failed."
