@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import { localServerURL } from "./port";
+
 const isCI = Boolean(process.env["CI"]);
 
 export default defineConfig({
@@ -10,7 +12,7 @@ export default defineConfig({
   ...(isCI ? { workers: 1 } : {}),
   reporter: "list",
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: localServerURL,
     trace: "on-first-retry",
   },
   projects: [
@@ -24,8 +26,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:5173",
+    command: "pnpm run dev",
+    url: localServerURL,
     reuseExistingServer: !isCI,
   },
 });
