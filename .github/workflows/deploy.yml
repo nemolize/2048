@@ -36,8 +36,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
 
-      - uses: nemolize/set-wrangler-name@3630486c8e8402077ed7a3cb45c3576732777048 # v1
-
       - run: pnpm run build
 
       - id: deploy
