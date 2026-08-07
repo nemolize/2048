@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import { isPreviewTarget } from "./e2e-tests/target";
 import { localServerURL } from "./port";
 
 const isCI = Boolean(process.env["CI"]);
@@ -26,8 +27,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm run dev",
+    command: isPreviewTarget
+      ? "pnpm run build && pnpm run preview"
+      : "pnpm run dev",
     url: localServerURL,
-    reuseExistingServer: !isCI,
+    timeout: 180_000,
+    // Dev and preview share the port; reusing one would test the wrong runtime.
+    reuseExistingServer: false,
   },
 });
