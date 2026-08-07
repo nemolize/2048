@@ -14,7 +14,7 @@ export type Swipe = (
  * before/after comparisons detect any tile movement, merge, or spawn.
  */
 export const serializeBoard = async (gameBoard: Locator): Promise<string> =>
-  gameBoard.evaluate((boardElement) =>
+  gameBoard.evaluate((boardElement: HTMLElement) =>
     Array.from(boardElement.querySelectorAll<HTMLElement>('[role="img"]'))
       .map(
         (tile) =>

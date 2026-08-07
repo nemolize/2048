@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/.pnpm-store
 
 # testing
 /coverage
@@ -21,3 +22,8 @@
 
 # playwright
 /test-results/
+/playwright-report/
+
+.wrangler/
+.serena/
+/.claude/settings.local.json

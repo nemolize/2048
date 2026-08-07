@@ -1,12 +1,12 @@
 import clsx from "clsx";
+import type { MotionStyle } from "motion/react";
 import { m } from "motion/react";
-import type { CSSProperties } from "react";
 
 import type { TileState } from "../hooks/useGame2048";
 
 interface TileProps {
   tile: TileState;
-  style?: CSSProperties;
+  style?: MotionStyle;
 }
 
 const tileColors: Record<number, string> = {
