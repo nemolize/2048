@@ -83,7 +83,7 @@ test("tiles remain square and aligned", async ({ page }) => {
   const board = page.getByRole("application");
   await expect(board).toBeVisible();
 
-  const tileSnapshot = await board.evaluate((boardElement) => {
+  const tileSnapshot = await board.evaluate((boardElement: HTMLElement) => {
     const boardRect = boardElement.getBoundingClientRect();
     // Use offsetWidth/Height (layout box, ignores transform) instead of
     // getBoundingClientRect (transform-aware) so in-flight scale animations

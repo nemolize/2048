@@ -5,18 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:tunnel": "run-p dev tunnel",
+    "tunnel": "cloudflared tunnel --url http://localhost:${PLAYWRIGHT_PORT:-5173}",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "run-p --continue-on-error 'lint:*'",
     "lint:eslint": "eslint .",
-    "lint:typecheck": "tsc --noEmit",
+    "lint:typecheck": "run-p --continue-on-error typecheck:app typecheck:node typecheck:e2e",
     "lint:prettier": "prettier --check .",
+    "typecheck:app": "tsc --noEmit",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
+    "typecheck:e2e": "tsc --noEmit -p e2e-tests/tsconfig.json",
     "fix": "run-s --continue-on-error fix:eslint fix:prettier",
     "fix:eslint": "eslint . --fix",
     "fix:prettier": "prettier --write .",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "prepare": "lefthook install"
+    "prepare": "hk install"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -25,8 +31,8 @@
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.51.0",
     "@eslint/compat": "^2.0.5",
-    "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
     "@tailwindcss/vite": "^4.2.4",
@@ -36,14 +42,14 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-simple-import-sort": "^13.0.0",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.6.0",
-    "jsdom": "^29.1.1",
-    "lefthook": "^2.1.6",
-    "npm-run-all2": "^8.0.4",
+    "happy-dom": "^20.11.1",
+    "npm-run-all2": "^9.0.3",
     "playwright": "^1.59.1",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
@@ -52,6 +58,6 @@
     "typescript-eslint": "^8.59.1",
     "vite": "^8.0.10",
     "vitest": "^4.1.5",
-    "wrangler": "^4.87.0"
+    "wrangler": "^4.119.0"
   }
 }

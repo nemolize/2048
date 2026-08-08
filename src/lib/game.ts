@@ -228,16 +228,15 @@ export const serializeBoard = (board: Board): SerializedBoard =>
     ),
   );
 
-const isSerializedTile = (value: unknown): value is SerializedTile => {
-  if (typeof value !== "object" || value === null) return false;
-  const cell = value as Record<string, unknown>;
-  return (
-    typeof cell.id === "string" &&
-    typeof cell.value === "number" &&
-    typeof cell.row === "number" &&
-    typeof cell.col === "number"
-  );
-};
+export const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const isSerializedTile = (value: unknown): value is SerializedTile =>
+  isRecord(value) &&
+  typeof value["id"] === "string" &&
+  typeof value["value"] === "number" &&
+  typeof value["row"] === "number" &&
+  typeof value["col"] === "number";
 
 export const isSerializedBoard = (value: unknown): value is SerializedBoard =>
   Array.isArray(value) &&

@@ -21,6 +21,11 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        { assertionStyle: "never" },
+      ],
+      "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-unused-vars": "off",
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
@@ -41,5 +46,13 @@ export default tseslint.config(
   {
     files: ["**/*.{test,spec}.{js,ts,jsx,tsx}"],
     languageOptions: { globals: globals.vitest },
+    rules: {
+      // vi.mock's importOriginal is typed as `importOriginal<typeof import(M)>()`;
+      // there is no top-level-import spelling of it.
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        { disallowTypeAnnotations: false },
+      ],
+    },
   },
 );

@@ -9,6 +9,7 @@ import {
   deserializeBoard,
   GHOST_LIFETIME_MS,
   initializeBoard,
+  isRecord,
   isSerializedBoard,
   moveBoard,
   serializeBoard,
@@ -83,17 +84,16 @@ const safeRemoveItem = (key: string) => {
 };
 
 const isStoredGameState = (value: unknown): value is StoredGameState => {
-  if (typeof value !== "object" || value === null) return false;
-  const state = value as Record<string, unknown>;
+  if (!isRecord(value)) return false;
   const versionValid =
-    state.version === 1 ||
-    (state.version === 2 && typeof state.keepPlaying === "boolean");
+    value["version"] === 1 ||
+    (value["version"] === 2 && typeof value["keepPlaying"] === "boolean");
   return (
     versionValid &&
-    typeof state.score === "number" &&
-    typeof state.gameOver === "boolean" &&
-    typeof state.won === "boolean" &&
-    isSerializedBoard(state.board)
+    typeof value["score"] === "number" &&
+    typeof value["gameOver"] === "boolean" &&
+    typeof value["won"] === "boolean" &&
+    isSerializedBoard(value["board"])
   );
 };
 

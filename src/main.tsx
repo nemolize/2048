@@ -9,7 +9,10 @@ import App from "@/App";
 const loadMotionFeatures = () =>
   import("@/motionFeatures").then((module) => module.default);
 
-createRoot(document.getElementById("root") as HTMLElement).render(
+const rootElement = document.getElementById("root");
+if (rootElement === null) throw new Error("root element is missing");
+
+createRoot(rootElement).render(
   <StrictMode>
     <MotionConfig reducedMotion="user">
       <LazyMotion features={loadMotionFeatures} strict>
