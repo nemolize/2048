@@ -81,7 +81,7 @@ export const Tile = ({ tile, style }: TileProps) => {
         zIndex: isGhost === true ? 0 : isMerged ? 2 : 1,
       }}
       role="img"
-      aria-label={`Tile with value ${value}`}
+      aria-label={`Tile with value ${String(value)}`}
       initial={{
         opacity: isNew ? 0 : 1,
         scale: isNew ? 0.5 : 1,

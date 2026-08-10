@@ -18,4 +18,4 @@ export const readPort = (raw: string | undefined): number => {
 };
 
 export const localServerPort = readPort(process.env["PLAYWRIGHT_PORT"]);
-export const localServerURL = `http://localhost:${localServerPort}`;
+export const localServerURL = `http://localhost:${String(localServerPort)}`;

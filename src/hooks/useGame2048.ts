@@ -166,7 +166,12 @@ export const useGame2048 = () => {
   const undoSnapshotRef = useRef<UndoSnapshot | null>(null);
   const [canUndo, setCanUndo] = useState(false);
 
-  useEffect(() => () => clearTimeout(ghostTimeoutRef.current), []);
+  useEffect(
+    () => () => {
+      clearTimeout(ghostTimeoutRef.current);
+    },
+    [],
+  );
 
   const makeMove = useCallback(
     (direction: Direction) => {
@@ -207,10 +212,9 @@ export const useGame2048 = () => {
       setGhosts(mergeGhosts);
       clearTimeout(ghostTimeoutRef.current);
       if (mergeGhosts.length > 0) {
-        ghostTimeoutRef.current = setTimeout(
-          () => setGhosts([]),
-          GHOST_LIFETIME_MS,
-        );
+        ghostTimeoutRef.current = setTimeout(() => {
+          setGhosts([]);
+        }, GHOST_LIFETIME_MS);
       }
 
       // The win check fires at most once per game: after the first win the

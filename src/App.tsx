@@ -34,7 +34,9 @@ const App = () => {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [undo]);
 
   // Game over takes precedence: the board can fill up while keeping going

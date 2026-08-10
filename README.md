@@ -11,7 +11,7 @@ An implementation of the classic 2048 puzzle game built with React, TypeScript, 
 - **Game state management** with score tracking and win/lose detection
 - **Tech stack**: React, TypeScript, Vite, Tailwind CSS
 - **Comprehensive testing** with Vitest and Playwright
-- **Code quality tools**: ESLint and Prettier for linting and formatting
+- **Code quality tools**: type-aware ESLint (with accessibility and test-framework rules), Prettier, and knip for unused-code detection
 - **Automated dependency updates** with Renovate
 
 ## Getting Started
