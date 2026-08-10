@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "project": ["**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,css}"],
-  // Host tools, not npm packages: hk comes from mise, cloudflared from the host.
-  "ignoreBinaries": ["cloudflared", "hk"],
+  // Host tool, not an npm package: cloudflared comes from the host.
+  "ignoreBinaries": ["cloudflared"],
 }
