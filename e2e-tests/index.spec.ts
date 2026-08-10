@@ -104,12 +104,7 @@ test("tiles remain square and aligned", async ({ page }) => {
     };
   });
 
-  expect(tileSnapshot).not.toBeNull();
-  const { boardWidth, boardHeight, tiles } = tileSnapshot ?? {
-    boardWidth: 0,
-    boardHeight: 0,
-    tiles: [],
-  };
+  const { boardWidth, boardHeight, tiles } = tileSnapshot;
 
   expect(Math.abs(boardWidth - boardHeight)).toBeLessThan(1);
   expect(tiles.length).toBeGreaterThan(0);

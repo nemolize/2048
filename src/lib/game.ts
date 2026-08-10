@@ -6,7 +6,7 @@ export const GRID_SIZE = 4;
 export const GHOST_LIFETIME_MS = 350;
 
 let tileIdCounter = 0;
-export const nextTileId = () => `tile-${++tileIdCounter}`;
+const nextTileId = () => `tile-${String(++tileIdCounter)}`;
 
 export interface TileState {
   id: string;
@@ -42,9 +42,9 @@ export const createEmptyBoard = (): Board =>
 
 export const addRandomTile = (board: Board): Board => {
   const emptyCells: [number, number][] = [];
-  board.forEach((row, r) =>
-    row.forEach((cell, c) => !cell && emptyCells.push([r, c])),
-  );
+  board.forEach((row, r) => {
+    row.forEach((cell, c) => !cell && emptyCells.push([r, c]));
+  });
 
   if (emptyCells.length === 0) return board;
 
@@ -73,9 +73,9 @@ export interface MoveResult {
   moved: boolean;
 }
 
-export type Orientation = "horizontal" | "vertical";
+type Orientation = "horizontal" | "vertical";
 
-export const compressLine = (
+const compressLine = (
   line: (TileState | null)[],
   fixedIndex: number,
   orientation: Orientation,
@@ -89,7 +89,9 @@ export const compressLine = (
   const workingLine = reverse ? [...line].reverse() : line;
   const filtered = workingLine.filter((t): t is TileState => t != null);
 
-  const result: (TileState | null)[] = Array(GRID_SIZE).fill(null);
+  const result: (TileState | null)[] = Array.from<TileState | null>({
+    length: GRID_SIZE,
+  }).fill(null);
   const ghosts: TileState[] = [];
   let score = 0;
   let moved = false;
@@ -104,7 +106,7 @@ export const compressLine = (
         ? [fixedIndex, targetPos]
         : [targetPos, fixedIndex];
 
-    if (current && next && current.value === next.value) {
+    if (current && current.value === next?.value) {
       // Keep `current`'s id so the surviving tile slides into the merge cell
       // (same React key -> continuous layout animation) instead of remounting.
       result[targetIndex] = createTile(row, col, current.value * 2, {
@@ -139,7 +141,7 @@ export const compressLine = (
   return { line: reverse ? result.reverse() : result, ghosts, score, moved };
 };
 
-export const moveHorizontal = (board: Board, reverse: boolean): MoveResult => {
+const moveHorizontal = (board: Board, reverse: boolean): MoveResult => {
   let moved = false;
   let score = 0;
   const ghosts: TileState[] = [];
@@ -155,7 +157,7 @@ export const moveHorizontal = (board: Board, reverse: boolean): MoveResult => {
   return { board: nextBoard, ghosts, score, moved };
 };
 
-export const moveVertical = (board: Board, reverse: boolean): MoveResult => {
+const moveVertical = (board: Board, reverse: boolean): MoveResult => {
   let moved = false;
   let score = 0;
   const ghosts: TileState[] = [];

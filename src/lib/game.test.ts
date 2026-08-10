@@ -21,7 +21,9 @@ import {
 const boardFromValues = (values: number[][]): Board =>
   values.map((row, r) =>
     row.map((value, c) =>
-      value === 0 ? null : createTile(r, c, value, { id: `r${r}c${c}` }),
+      value === 0
+        ? null
+        : createTile(r, c, value, { id: `r${String(r)}c${String(c)}` }),
     ),
   );
 
@@ -39,7 +41,9 @@ describe("createEmptyBoard", () => {
     expect(board).toHaveLength(GRID_SIZE);
     board.forEach((row) => {
       expect(row).toHaveLength(GRID_SIZE);
-      row.forEach((cell) => expect(cell).toBeNull());
+      row.forEach((cell) => {
+        expect(cell).toBeNull();
+      });
     });
   });
 });
@@ -427,7 +431,9 @@ describe("initializeBoard", () => {
 
     const tiles = board.flat().filter((cell) => cell != null);
     expect(tiles).toHaveLength(2);
-    tiles.forEach((tile) => expect([2, 4]).toContain(tile.value));
+    tiles.forEach((tile) => {
+      expect([2, 4]).toContain(tile.value);
+    });
   });
 });
 

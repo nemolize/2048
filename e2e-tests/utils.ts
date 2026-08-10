@@ -13,7 +13,7 @@ export type Swipe = (
  * Serialize the board into a deterministic "row,col:label" string so
  * before/after comparisons detect any tile movement, merge, or spawn.
  */
-export const serializeBoard = async (gameBoard: Locator): Promise<string> =>
+const serializeBoard = async (gameBoard: Locator): Promise<string> =>
   gameBoard.evaluate((boardElement: HTMLElement) =>
     Array.from(boardElement.querySelectorAll<HTMLElement>('[role="img"]'))
       .map(
@@ -39,6 +39,9 @@ export const expectSwipeToChangeBoard = async (
   const before = await serializeBoard(gameBoard);
 
   await swipe(page, gameBoard, "left");
+  // Detecting a no-op swipe means waiting the slide animation out; there is no
+  // arrival to poll for.
+  // eslint-disable-next-line playwright/no-wait-for-timeout
   await page.waitForTimeout(400);
 
   if ((await serializeBoard(gameBoard)) === before) {

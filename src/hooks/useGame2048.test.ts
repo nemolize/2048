@@ -25,7 +25,9 @@ vi.mock("../lib/game", async (importOriginal) => {
 const boardFromValues = (values: number[][]): Board =>
   values.map((row, r) =>
     row.map((value, c) =>
-      value === 0 ? null : createTile(r, c, value, { id: `r${r}c${c}` }),
+      value === 0
+        ? null
+        : createTile(r, c, value, { id: `r${String(r)}c${String(c)}` }),
     ),
   );
 

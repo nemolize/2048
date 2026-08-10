@@ -33,7 +33,9 @@ export const GameBoard = ({ tiles, onMove }: GameBoardProps) => {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [onMove]);
 
   return (
