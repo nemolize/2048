@@ -1,12 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["local>nemolize/renovate-config"],
-  "packageRules": [
-    {
-      "description": "mcr.microsoft.com serves no release timestamps, and the default timestamp-required behaviour treats a missing one as never old enough — so minimumReleaseAge holds these back indefinitely rather than for its stated window. That silently strands the Playwright image outside the group it shares with the npm packages, which is what keeps the E2E version-parity guard failing.",
-      "matchDatasources": ["docker"],
-      "matchDepNames": ["mcr.microsoft.com/**"],
-      "minimumReleaseAgeBehaviour": "timestamp-optional"
-    }
-  ]
+  "extends": ["local>nemolize/renovate-config"]
 }
