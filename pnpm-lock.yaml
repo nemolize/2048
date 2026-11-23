@@ -68,7 +68,7 @@ importers:
         version: 6.10.2(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-playwright:
         specifier: ^2.11.0
-        version: 2.11.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))
+        version: 2.12.2(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-react-hooks:
         specifier: ^7.1.1
         version: 7.1.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
@@ -560,10 +560,6 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
-
-  '@eslint-community/regexpp@4.12.2':
-    resolution: {integrity: sha512-EriSTlt5OC9/7SXkRSCAhfSxxoSUgBm33OH+IkwbdpgoqsSsUg7y3uh+IICI/Qg4BBWr3U2i39RpmycbxMq4ew==}
-    engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
 
   '@eslint-community/regexpp@4.12.3':
     resolution: {integrity: sha512-R76UKbvsqI68DJJVTVyqFKqU98CN4+B+acxNfEA2IFarSzP0SjtKf/3+fFiXzTyv5Fj3PxLkGHe2wnVWWMxobQ==}
@@ -1883,8 +1879,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
 
-  eslint-plugin-playwright@2.11.0:
-    resolution: {integrity: sha512-zOIEYyv1TSn2izXkyg/yj0LXc4YBQI6pl3xIFWwMCcXt/dgQCz8dBqXiXFMoM3xc/GqZThAtaGYo8aPu/vBd+Q==}
+  eslint-plugin-playwright@2.12.2:
+    resolution: {integrity: sha512-sYRCyAEACD3URVoFTfldZcvZNdlJ1r5414gilOTsDCu26PY7l4dUl/3o9ohIEltZgaDS1VXD1mG5xU1KlIGJSw==}
     engines: {node: '>=16.9.0'}
     peerDependencies:
       eslint: '>=8.40.0'
@@ -2076,6 +2072,10 @@ packages:
   glob-parent@6.0.2:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
+
+  globals@17.14.0:
+    resolution: {integrity: sha512-UtdkTVyAJePQv0J2M9Xe4L0ruNSDV314XiIJsADI2Zf40bcdAonE/D/OhAU8AT99oij9mhLByb+NvA3QWZYgCg==}
+    engines: {node: '>=18'}
 
   globals@17.9.0:
     resolution: {integrity: sha512-m/MvAW61QVU5VDNF1Vj8axt016h8w7L5TU1e9zlab7XIttAT2YAlCwl75K1fOqvMM9apmD7lbCIRhpfkhmxhCg==}
@@ -3714,8 +3714,6 @@ snapshots:
       eslint: 10.15.0(jiti@2.7.0)(supports-color@10.2.2)
       eslint-visitor-keys: 3.4.3
 
-  '@eslint-community/regexpp@4.12.2': {}
-
   '@eslint-community/regexpp@4.12.3': {}
 
   '@eslint/compat@2.1.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))':
@@ -4276,7 +4274,7 @@ snapshots:
 
   '@typescript-eslint/eslint-plugin@8.66.0(@typescript-eslint/parser@8.66.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)':
     dependencies:
-      '@eslint-community/regexpp': 4.12.2
+      '@eslint-community/regexpp': 4.12.3
       '@typescript-eslint/parser': 8.66.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       '@typescript-eslint/scope-manager': 8.66.0
       '@typescript-eslint/type-utils': 8.66.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -4936,10 +4934,10 @@ snapshots:
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-playwright@2.11.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-playwright@2.12.2(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       eslint: 10.15.0(jiti@2.7.0)(supports-color@10.2.2)
-      globals: 17.9.0
+      globals: 17.14.0
 
   eslint-plugin-react-hooks@7.1.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2):
     dependencies:
@@ -5157,6 +5155,8 @@ snapshots:
   glob-parent@6.0.2:
     dependencies:
       is-glob: 4.0.3
+
+  globals@17.14.0: {}
 
   globals@17.9.0: {}
 
