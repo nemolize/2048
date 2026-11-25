@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: nemolize/actions/setup@9a635df512e1bffb9472b819c6760dc255543849 # v1.0.0
+      - uses: nemolize/actions/setup@5d31663b9013a671ff8fe8b84900a88b9878f0c1 # v1.5.0
       - run: pnpm run lint
 
   Test:
@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: nemolize/actions/setup@9a635df512e1bffb9472b819c6760dc255543849 # v1.0.0
+      - uses: nemolize/actions/setup@5d31663b9013a671ff8fe8b84900a88b9878f0c1 # v1.5.0
       - id: test
         run: pnpm run test:coverage
       # Keyed on the test step, not the job: a failure before it leaves no report,
@@ -62,7 +62,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - if: ${{ !cancelled() && (steps.test.outcome == 'success' || steps.test.outcome == 'failure') }}
         name: Write the coverage report into the PR description
-        uses: nemolize/actions/upsert@77ba465744c758cc704be356f9fbc48d152baa4c # v1.1.0
+        uses: nemolize/actions/upsert@5d31663b9013a671ff8fe8b84900a88b9878f0c1 # v1.5.0
         with:
           marker: coverage
           body: ${{ steps.table.outputs.markdown }}
@@ -75,7 +75,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: nemolize/actions/setup@9a635df512e1bffb9472b819c6760dc255543849 # v1.0.0
+      - uses: nemolize/actions/setup@5d31663b9013a671ff8fe8b84900a88b9878f0c1 # v1.5.0
       - run: pnpm run build
 
   E2ETests:
@@ -91,7 +91,7 @@ jobs:
       # checkout's own safe.directory lasts only for its step; the `prepare`
       # script (`lefthook install`) that `pnpm install` runs needs it too.
       - run: git config --global --add safe.directory "$(pwd)"
-      - uses: nemolize/actions/setup@9a635df512e1bffb9472b819c6760dc255543849 # v1.0.0
+      - uses: nemolize/actions/setup@5d31663b9013a671ff8fe8b84900a88b9878f0c1 # v1.5.0
       - name: Assert the image ships the Playwright version we depend on
         run: |
           img="$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('/ms-playwright/.docker-info', 'utf8')).driverVersion)")"
